@@ -1,5 +1,52 @@
-# Vue 3 + Vite
+# RimWorld Climate Control Calculator
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Калькулятор для расчёта требуемых ресурсов при строительстве системы климат-контроля в игре RimWorld с модом [Centralized Climate Control (Continued)](https://steamcommunity.com/sharedfiles/filedetails/?id=2007268173).
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+Онлайн версия: [https://asboldyrev.github.io/rimworld-climate-control](https://asboldyrev.github.io/rimworld-climate-control)
+
+## Возможности
+
+- Расчёт необходимого количества компонентов для системы климат-контроля
+- Поддержка нескольких комнат в одной системе
+- Учёт двойных стен
+- Автоматический подбор оптимального оборудования
+- Расчёт общих затрат ресурсов
+- Предупреждения о неэффективных конфигурациях
+- Сохранение конфигураций в браузере
+- Экспорт и импорт настроек
+
+## Использование
+
+1. Добавьте одну или несколько комнат, указав их размеры
+2. При необходимости отметьте наличие двойных стен
+3. Выберите тип оборудования или оставьте автоматический подбор
+4. Просмотрите результаты расчёта в таблице ресурсов
+
+Калькулятор автоматически сохраняет все изменения в браузере. Вы можете отключить автосохранение в любой момент.
+
+## Локальная разработка
+
+Установка зависимостей
+```bash
+npm install
+```
+
+Запуск сервера разработки
+```bash
+npm run dev
+```
+
+Сборка для продакшена
+```bash
+npm run build
+
+## Технологии
+
+- Vue 3 (Composition API)
+- Pinia
+- Bulma CSS
+- Vite
+
+## Лицензия
+
+MIT
