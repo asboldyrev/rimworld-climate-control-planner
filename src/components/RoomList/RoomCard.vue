@@ -1,6 +1,10 @@
 <script setup>
     import { computed } from 'vue'
     import { ROOM_VALIDATION } from '@/constants/validation'
+    import { deviceSpecs } from '@/constants/deviceSpecs'
+    import { useRoomCalculations } from '@/composables/useRoomCalculations'
+
+    const { calculateRoomRequiredCapacity, autoSelectVentForRoom } = useRoomCalculations()
 
     const props = defineProps({
         modelValue: {
@@ -97,6 +101,16 @@
         return result
     })
 
+    const ventInfo = computed(() => {
+        const baseVentInfo = autoSelectVentForRoom(props.modelValue)
+        const count = props.modelValue.count || 1
+        return {
+            type: deviceSpecs.vents[baseVentInfo.selectedType].name,
+            singleCount: baseVentInfo.count,
+            totalCount: baseVentInfo.count * count
+        }
+    })
+
     const hasErrors = computed(() => Object.keys(errors.value).length > 0)
 </script>
 
@@ -173,6 +187,13 @@
                     Двойные стены
                 </label>
             </div>
+        </div>
+
+        <div class="block">
+            <h6 class="title is-7 mb-1">Вентиляция</h6>
+            <p class="has-text-grey is-size-7 mb-0">Тип: {{ ventInfo.type }}</p>
+            <p class="has-text-grey is-size-7" :class="{ 'mb-0': (modelValue.count || 1) > 1, 'mb-3': (modelValue.count || 1) <= 1 }">На комнату: {{ ventInfo.singleCount }} шт.</p>
+            <p v-if="(modelValue.count || 1) > 1" class="has-text-grey is-size-7 mb-3">Всего: {{ ventInfo.totalCount }} шт.</p>
         </div>
     </div>
 </template>
