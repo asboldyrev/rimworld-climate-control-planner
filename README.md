@@ -2,7 +2,7 @@
 
 Калькулятор для расчёта требуемых ресурсов при строительстве системы климат-контроля в игре RimWorld с модом [Centralized Climate Control (Continued)](https://steamcommunity.com/sharedfiles/filedetails/?id=2007268173).
 
-Онлайн версия: [https://asboldyrev.github.io/rimworld-climate-control](https://asboldyrev.github.io/rimworld-climate-control)
+Онлайн версия: [https://asboldyrev.github.io/rimworld-climate-control-planner/](https://asboldyrev.github.io/rimworld-climate-control-planner/)
 
 ## Возможности
 
