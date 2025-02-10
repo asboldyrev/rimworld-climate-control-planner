@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор Централизованного Климат-Контроля</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="https://unpkg.com/vue@3"></script>
+  <style>
+    body {
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+    }
+
+    /* Горизонтальное расположение селектов в блоке выбора оборудования */
+    .equipment-selection .columns {
+      margin-bottom: 0;
+    }
+
+    .equipment-selection .column .field-label {
+      min-width: 150px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="container py-5">
+    <h1 class="title mb-5">Калькулятор Централизованного Климат-Контроля</h1>
+
+    <!-- Перебор систем -->
+    <div v-for="(system, systemIndex) in systems" :key="systemIndex" class="box mb-5">
+      <div class="level mb-4">
+        <div class="level-left">
+          <div class="level-item">
+            <h2 class="title is-4 mb-0">Система {{ systemIndex + 1 }}</h2>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <button class="button is-danger" @click="removeSystem(systemIndex)">Удалить систему</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Блок выбора оборудования -->
+      <div class="box is-light equipment-selection mb-5">
+        <h3 class="subtitle is-5 mb-4">Выбор оборудования</h3>
+        <div class="columns is-multiline is-mobile">
+          <div class="column is-12-mobile is-4-tablet">
+            <div class="field">
+              <label class="label">Тип вентилятора</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <select v-model="system.fanType">
+                    <option value="auto">Автоматический подбор</option>
+                    <option v-for="(spec, type) in deviceSpecs.fans" :value="type" :key="type">
+                      {{ spec.name }} ({{ spec.capacity }} cc/s, {{ spec.power }} Вт)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-12-mobile is-4-tablet">
+            <div class="field">
+              <label class="label">Тип центрального блока</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <select v-model="system.centralUnitType">
+                    <option value="auto">Автоматический подбор</option>
+                    <option v-for="(spec, type) in deviceSpecs.units" :value="type" :key="type">
+                      {{ spec.name }} ({{ spec.capacity }} cc/s, {{ spec.power }} Вт)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-12-mobile is-4-tablet">
+            <div class="field">
+              <label class="label">Тип вентиляционного отверстия</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <select v-model="system.ventType">
+                    <option value="auto">Автоматический подбор</option>
+                    <option v-for="(spec, type) in deviceSpecs.vents" :value="type" :key="type">
+                      {{ spec.name }} ({{ spec.capacity }} cc/s)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Комнаты системы -->
+      <div class="mt-4">
+        <div class="columns is-multiline">
+          <!-- Список комнат -->
+          <div v-for="(room, roomIndex) in system.rooms" :key="roomIndex" class="column is-12-mobile is-4-tablet">
+            <div class="box">
+              <h4 class="title is-5 mb-4">Комната {{ roomIndex + 1 }}</h4>
+
+              <!-- Размеры комнаты -->
+              <div class="field mb-4">
+                <label class="label">Размеры комнаты (м)</label>
+                <div class="field is-grouped">
+                  <div class="control is-expanded">
+                    <input class="input" type="number" v-model.number="room.length" placeholder="Длина">
+                  </div>
+                  <div class="control is-expanded">
+                    <input class="input" type="number" v-model.number="room.width" placeholder="Ширина">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Чекбокс двойной стены -->
+              <div class="field mb-4">
+                <label class="checkbox">
+                  <input type="checkbox" v-model="room.doubleWall">
+                  Двойная стена
+                </label>
+              </div>
+
+              <!-- Кнопка удаления -->
+              <div class="field mb-4">
+                <button class="button is-danger is-light is-fullwidth" @click="removeRoom(systemIndex, roomIndex)">
+                  Удалить комнату
+                </button>
+              </div>
+
+              <div class="has-text-grey">
+                <div class="mb-2"><strong>Вентиляция</strong></div>
+                <div v-if="system.ventType === 'auto'">
+                  Количество: {{ autoSelectVentForRoom(room).count }} шт<br>
+                  Тип: {{ deviceSpecs.vents[autoSelectVentForRoom(room).selectedType].name }}
+                </div>
+                <div v-else>
+                  Количество: {{ calculateRoomVents(room, system) }} шт<br>
+                  Тип: {{ deviceSpecs.vents[system.ventType].name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Если нет комнат -->
+        <div v-if="system.rooms.length === 0" class="has-text-grey-light has-text-centered py-4">
+          <span>Нет добавленных комнат. Нажмите "Добавить комнату" для начала работы.</span>
+        </div>
+
+        <button class="button is-info is-fullwidth mt-4" @click="addRoom(systemIndex)">
+          Добавить комнату
+        </button>
+      </div>
+
+      <!-- Сводка по системе -->
+      <div class="mt-5">
+        <p class="mb-3"><strong>Общая вентиляция (сумма отверстий по комнатам):</strong> {{ calculateTotalVents(system) }}</p>
+        <div class="table-container">
+          <table class="table is-bordered is-fullwidth is-striped is-narrow">
+            <thead>
+              <tr>
+                <th>Устройство</th>
+                <th>Тип</th>
+                <th>Количество</th>
+                <th>Сталь (ед.)</th>
+                <th>Компоненты (ед.)</th>
+                <th>Мощность (Вт)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Вентиляторы</td>
+                <td>{{ getFanResources(system).type }}</td>
+                <td>{{ getFanResources(system).count }}</td>
+                <td>{{ getFanResources(system).steel }}</td>
+                <td>{{ getFanResources(system).components }}</td>
+                <td>{{ getFanResources(system).power }}</td>
+              </tr>
+              <tr>
+                <td>Центральные блоки</td>
+                <td>{{ getUnitResources(system).type }}</td>
+                <td>{{ getUnitResources(system).count }}</td>
+                <td>{{ getUnitResources(system).steel }}</td>
+                <td>{{ getUnitResources(system).components }}</td>
+                <td>{{ getUnitResources(system).power }}</td>
+              </tr>
+              <template v-if="system.ventType === 'auto'">
+                <template v-for="(vent, type) in deviceSpecs.vents" :key="type">
+                  <tr v-if="system.rooms.some(room => autoSelectVentForRoom(room).selectedType === type)">
+                    <td>Вентиляционные отверстия</td>
+                    <td>{{ vent.name }}</td>
+                    <td>
+                      {{ system.rooms.reduce((sum, room) => {
+                      const info = autoSelectVentForRoom(room);
+                      return sum + (info.selectedType === type ? info.count : 0);
+                      }, 0) }}
+                    </td>
+                    <td>
+                      {{ system.rooms.reduce((sum, room) => {
+                      const info = autoSelectVentForRoom(room);
+                      return sum + (info.selectedType === type ? info.count * vent.steel : 0);
+                      }, 0) }}
+                    </td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </template>
+              </template>
+              <template v-else>
+                <tr>
+                  <td>Вентиляционные отверстия</td>
+                  <td>{{ deviceSpecs.vents[system.ventType].name }}</td>
+                  <td>{{ calculateTotalVents(system) }}</td>
+                  <td>{{ calculateTotalVents(system) * deviceSpecs.vents[system.ventType].steel }}</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+              </template>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr class="has-text-weight-bold">
+                <td colspan="2">Итого</td>
+                <td>{{ getFanResources(system).count + getUnitResources(system).count + calculateTotalVents(system) }}</td>
+                <td>{{ getFanResources(system).steel + getUnitResources(system).steel +
+                  system.rooms.reduce((sum, room) => {
+                  let info = system.ventType === 'auto' ? autoSelectVentForRoom(room) : { count: calculateRoomVents(room, system) };
+                  let ventType = system.ventType === 'auto' ? info.selectedType : system.ventType;
+                  return sum + info.count * deviceSpecs.vents[ventType].steel;
+                  }, 0) }}</td>
+                <td>{{ getFanResources(system).components + getUnitResources(system).components }}</td>
+                <td>{{ getFanResources(system).power + getUnitResources(system).power }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <button class="button is-primary is-fullwidth mb-5" @click="addSystem">Добавить новую систему</button>
+
+    <!-- Общая сводка по всем системам -->
+    <div class="mb-6">
+      <h2 class="title is-4 mb-4">Общая сводка</h2>
+      <div class="box">
+        <div class="table-container">
+          <table class="table is-bordered is-fullwidth is-striped is-narrow">
+            <thead>
+              <tr>
+                <th>Тип оборудования</th>
+                <th>Наименование</th>
+                <th>Количество (шт.)</th>
+                <th>Сталь (ед.)</th>
+                <th>Компоненты (ед.)</th>
+                <th>Мощность (Вт)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-if="systems.length > 0">
+                <!-- Вентиляторы -->
+                <template v-for="(fan, type) in deviceSpecs.fans" :key="type">
+                  <tr v-show="systems.reduce((sum, sys) => {
+                      if (sys.fanType === 'auto') {
+                        return sum + (autoSelectFan(sys).selectedType === type ? getFanCount(sys) : 0);
+                      }
+                      return sum + (sys.fanType === type ? getFanCount(sys) : 0);
+                    }, 0) > 0">
+                    <td>Вентиляторы</td>
+                    <td>{{ fan.name }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.fanType === 'auto') {
+                      return sum + (autoSelectFan(sys).selectedType === type ? getFanCount(sys) : 0);
+                      }
+                      return sum + (sys.fanType === type ? getFanCount(sys) : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.fanType === 'auto') {
+                      return sum + (autoSelectFan(sys).selectedType === type ? getFanResources(sys).steel : 0);
+                      }
+                      return sum + (sys.fanType === type ? getFanResources(sys).steel : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.fanType === 'auto') {
+                      return sum + (autoSelectFan(sys).selectedType === type ? getFanResources(sys).components : 0);
+                      }
+                      return sum + (sys.fanType === type ? getFanResources(sys).components : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.fanType === 'auto') {
+                      return sum + (autoSelectFan(sys).selectedType === type ? getFanResources(sys).power : 0);
+                      }
+                      return sum + (sys.fanType === type ? getFanResources(sys).power : 0);
+                      }, 0) }}</td>
+                  </tr>
+                </template>
+
+                <!-- Центральные блоки -->
+                <template v-for="(unit, type) in deviceSpecs.units" :key="type">
+                  <tr v-show="systems.reduce((sum, sys) => {
+                    if (sys.centralUnitType === 'auto') {
+                      return sum + (autoSelectUnit(sys).selectedType === type ? getUnitCount(sys) : 0);
+                    }
+                    return sum + (sys.centralUnitType === type ? getUnitCount(sys) : 0);
+                  }, 0) > 0">
+                    <td>Центральные блоки</td>
+                    <td>{{ unit.name }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.centralUnitType === 'auto') {
+                      return sum + (autoSelectUnit(sys).selectedType === type ? getUnitCount(sys) : 0);
+                      }
+                      return sum + (sys.centralUnitType === type ? getUnitCount(sys) : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.centralUnitType === 'auto') {
+                      return sum + (autoSelectUnit(sys).selectedType === type ? getUnitResources(sys).steel : 0);
+                      }
+                      return sum + (sys.centralUnitType === type ? getUnitResources(sys).steel : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.centralUnitType === 'auto') {
+                      return sum + (autoSelectUnit(sys).selectedType === type ? getUnitResources(sys).components : 0);
+                      }
+                      return sum + (sys.centralUnitType === type ? getUnitResources(sys).components : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.centralUnitType === 'auto') {
+                      return sum + (autoSelectUnit(sys).selectedType === type ? getUnitResources(sys).power : 0);
+                      }
+                      return sum + (sys.centralUnitType === type ? getUnitResources(sys).power : 0);
+                      }, 0) }}</td>
+                  </tr>
+                </template>
+
+                <!-- Вентиляционные отверстия -->
+                <template v-for="(vent, type) in deviceSpecs.vents" :key="type">
+                  <tr v-show="systems.reduce((sum, sys) => {
+                    if (sys.ventType === type) {
+                      return sum + calculateTotalVents(sys);
+                    }
+                    return sum + (sys.ventType === 'auto' ? sys.rooms.reduce((roomSum, room) => {
+                      const info = autoSelectVentForRoom(room);
+                      return roomSum + (info.selectedType === type ? info.count : 0);
+                    }, 0) : 0);
+                  }, 0) > 0">
+                    <td>Вентиляционные отверстия</td>
+                    <td>{{ vent.name }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.ventType === type) {
+                      return sum + calculateTotalVents(sys);
+                      }
+                      return sum + (sys.ventType === 'auto' ? sys.rooms.reduce((roomSum, room) => {
+                      const info = autoSelectVentForRoom(room);
+                      return roomSum + (info.selectedType === type ? info.count : 0);
+                      }, 0) : 0);
+                      }, 0) }}</td>
+                    <td>{{ systems.reduce((sum, sys) => {
+                      if (sys.ventType === type) {
+                      return sum + calculateTotalVents(sys) * vent.steel;
+                      }
+                      return sum + (sys.ventType === 'auto' ? sys.rooms.reduce((roomSum, room) => {
+                      const info = autoSelectVentForRoom(room);
+                      return roomSum + (info.selectedType === type ? info.count * vent.steel : 0);
+                      }, 0) : 0);
+                      }, 0) }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </template>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr class="has-background-info-light has-text-weight-bold">
+                <td colspan="2">Итого</td>
+                <td>{{ overallFans + overallCentralUnits + overallVents }}</td>
+                <td>{{ overallResources.steel }}</td>
+                <td>{{ overallResources.components }}</td>
+                <td>{{ overallPower }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          systems: [
+            {
+              // По умолчанию: все типы установлены в "auto"
+              fanType: 'auto',
+              centralUnitType: 'auto',
+              ventType: 'auto',
+              rooms: [
+                { length: 3, width: 4, doubleWall: false }
+              ]
+            }
+          ],
+          deviceSpecs: {
+            fans: {
+              smallFan: { name: 'Маленький вентилятор', capacity: 300, power: 150, steel: 100, components: 1 },
+              largeFan: { name: 'Большой вентилятор', capacity: 1500, power: 450, steel: 300, components: 3 }
+            },
+            units: {
+              smallUnit: { name: 'Маленький блок', capacity: 900, power: 200, steel: 200, components: 3 },
+              largeUnit: { name: 'Большой блок', capacity: 4500, power: 600, steel: 600, components: 9 }
+            },
+            vents: {
+              smallWallVent: { name: 'Маленькая настенная вентиляция', capacity: 50, steel: 35 },
+              largeWallVent: { name: 'Большая настенная вентиляция', capacity: 100, steel: 70 },
+              smallFloorVent: { name: 'Маленькая напольная вентиляция', capacity: 300, steel: 210 },
+              largeFloorVent: { name: 'Большая напольная вентиляция', capacity: 600, steel: 420 }
+            }
+          }
+        };
+      },
+      computed: {
+        overallVents() {
+          return this.systems.reduce((total, system) => total + this.calculateTotalVents(system), 0);
+        },
+        overallFans() {
+          return this.systems.reduce((total, system) => total + this.getFanCount(system), 0);
+        },
+        overallCentralUnits() {
+          return this.systems.reduce((total, system) => total + this.getUnitCount(system), 0);
+        },
+        overallPower() {
+          return this.systems.reduce((total, system) => total + this.calculatePower(system), 0);
+        },
+        overallResources() {
+          let totalSteel = 0, totalComponents = 0;
+          this.systems.forEach(system => {
+            let fanRes = this.getFanResources(system);
+            let unitRes = this.getUnitResources(system);
+            let ventRes = this.getVentResources(system);
+            totalSteel += fanRes.steel + unitRes.steel + ventRes.steel;
+            totalComponents += fanRes.components + unitRes.components;
+          });
+          return { steel: totalSteel, components: totalComponents };
+        }
+      },
+      methods: {
+        // Расчёт требуемой вентиляционной ёмкости для комнаты: R = длина * ширина * 1.3; если двойная стена, R делится на 2.
+        calculateRoomRequiredCapacity(room) {
+          let R = room.length * room.width * 1.3;
+          if (room.doubleWall) {
+            R /= 2;
+          }
+          return R;
+        },
+        // Авто-подбор вентиляции для конкретной комнаты.
+        autoSelectVentForRoom(room) {
+          let R = this.calculateRoomRequiredCapacity(room);
+          let best = null;
+          Object.keys(this.deviceSpecs.vents).forEach(type => {
+            let count = Math.max(1, Math.round(R / this.deviceSpecs.vents[type].capacity));
+            let cost = count * this.deviceSpecs.vents[type].steel;
+            if (!best || cost < best.cost || (cost === best.cost && count < best.count)) {
+              best = { selectedType: type, count, cost };
+            }
+          });
+          return best;
+        },
+        // Расчёт количества вентиляционных отверстий для комнаты.
+        calculateRoomVents(room, system) {
+          let R = this.calculateRoomRequiredCapacity(room);
+          if (system.ventType === 'auto') {
+            let autoRes = this.autoSelectVentForRoom(room);
+            return autoRes.count;
+          } else {
+            let ventCapacity = this.deviceSpecs.vents[system.ventType].capacity;
+            return Math.max(1, Math.round(R / ventCapacity));
+          }
+        },
+        // Суммарная вентиляция системы (сумма отверстий по всем комнатам).
+        calculateTotalVents(system) {
+          return system.rooms.reduce((total, room) => total + this.calculateRoomVents(room, system), 0);
+        },
+        // Авто-подбор вентиляторов для системы.
+        autoSelectFan(system) {
+          const totalCapacity = system.rooms.reduce((total, room) => total + this.calculateRoomRequiredCapacity(room), 0);
+          const countSmall = Math.ceil(totalCapacity / this.deviceSpecs.fans.smallFan.capacity);
+          const costSmall = countSmall * this.deviceSpecs.fans.smallFan.steel + countSmall * this.deviceSpecs.fans.smallFan.components;
+          const elecSmall = countSmall * this.deviceSpecs.fans.smallFan.power;
+          const countLarge = Math.ceil(totalCapacity / this.deviceSpecs.fans.largeFan.capacity);
+          const costLarge = countLarge * this.deviceSpecs.fans.largeFan.steel + countLarge * this.deviceSpecs.fans.largeFan.components;
+          const elecLarge = countLarge * this.deviceSpecs.fans.largeFan.power;
+          if (costSmall < costLarge || (costSmall === costLarge && elecSmall <= elecLarge)) {
+            return { selectedType: 'smallFan', count: countSmall };
+          } else {
+            return { selectedType: 'largeFan', count: countLarge };
+          }
+        },
+        calculateFansManual(system) {
+          const totalCapacity = system.rooms.reduce((total, room) => total + this.calculateRoomRequiredCapacity(room), 0);
+          return Math.ceil(totalCapacity / this.deviceSpecs.fans[system.fanType].capacity);
+        },
+        getFanCount(system) {
+          if (system.fanType === 'auto') {
+            return this.autoSelectFan(system).count;
+          } else {
+            return this.calculateFansManual(system);
+          }
+        },
+        getFanResources(system) {
+          let fanCount, fanType;
+          if (system.fanType === 'auto') {
+            const info = this.autoSelectFan(system);
+            fanCount = info.count;
+            fanType = info.selectedType;
+          } else {
+            fanCount = this.calculateFansManual(system);
+            fanType = system.fanType;
+          }
+          let spec = this.deviceSpecs.fans[fanType];
+          return { type: spec.name, count: fanCount, steel: fanCount * spec.steel, components: fanCount * spec.components, power: fanCount * spec.power };
+        },
+        getFanInfo(system) {
+          const res = this.getFanResources(system);
+          return `${res.count} шт, ${res.type}`;
+        },
+        // Авто-подбор центральных блоков.
+        autoSelectUnit(system) {
+          const totalCapacity = system.rooms.reduce((total, room) => total + this.calculateRoomRequiredCapacity(room), 0);
+          const countSmall = Math.ceil(totalCapacity / this.deviceSpecs.units.smallUnit.capacity);
+          const costSmall = countSmall * this.deviceSpecs.units.smallUnit.steel + countSmall * this.deviceSpecs.units.smallUnit.components;
+          const elecSmall = countSmall * this.deviceSpecs.units.smallUnit.power;
+          const countLarge = Math.ceil(totalCapacity / this.deviceSpecs.units.largeUnit.capacity);
+          const costLarge = countLarge * this.deviceSpecs.units.largeUnit.steel + countLarge * this.deviceSpecs.units.largeUnit.components;
+          const elecLarge = countLarge * this.deviceSpecs.units.largeUnit.power;
+          if (costSmall < costLarge || (costSmall === costLarge && elecSmall <= elecLarge)) {
+            return { selectedType: 'smallUnit', count: countSmall };
+          } else {
+            return { selectedType: 'largeUnit', count: countLarge };
+          }
+        },
+        calculateUnitsManual(system) {
+          const totalCapacity = system.rooms.reduce((total, room) => total + this.calculateRoomRequiredCapacity(room), 0);
+          return Math.ceil(totalCapacity / this.deviceSpecs.units[system.centralUnitType].capacity);
+        },
+        getUnitCount(system) {
+          if (system.centralUnitType === 'auto') {
+            return this.autoSelectUnit(system).count;
+          } else {
+            return this.calculateUnitsManual(system);
+          }
+        },
+        getUnitResources(system) {
+          let unitCount, unitType;
+          if (system.centralUnitType === 'auto') {
+            const info = this.autoSelectUnit(system);
+            unitCount = info.count;
+            unitType = info.selectedType;
+          } else {
+            unitCount = this.calculateUnitsManual(system);
+            unitType = system.centralUnitType;
+          }
+          let spec = this.deviceSpecs.units[unitType];
+          return { type: spec.name, count: unitCount, steel: unitCount * spec.steel, components: unitCount * spec.components, power: unitCount * spec.power };
+        },
+        getUnitInfo(system) {
+          const res = this.getUnitResources(system);
+          return `${res.count} шт, ${res.type}`;
+        },
+        // Авто-подбор вентиляционных отверстий для системы — теперь рассчитывается для каждой комнаты отдельно,
+        // а затем агрегируется. (Если выбрано авто, каждая комната подбирает оптимальный тип.)
+        getVentResources(system) {
+          let totalCount = 0;
+          let totalSteel = 0;
+          // Если система выбрана вручную, все комнаты используют один тип.
+          if (system.ventType !== 'auto') {
+            totalCount = system.rooms.reduce((total, room) => {
+              let R = this.calculateRoomRequiredCapacity(room);
+              let count = Math.max(1, Math.round(R / this.deviceSpecs.vents[system.ventType].capacity));
+              return total + count;
+            }, 0);
+            totalSteel = totalCount * this.deviceSpecs.vents[system.ventType].steel;
+            return { type: this.deviceSpecs.vents[system.ventType].name, count: totalCount, steel: totalSteel };
+          } else {
+            // Для авто-подбора – каждая комната выбирает оптимальный вариант, затем группируем по типу.
+            let breakdown = {};
+            system.rooms.forEach((room, index) => {
+              let res = this.autoSelectVentForRoom(room);
+              if (!breakdown[res.selectedType]) {
+                breakdown[res.selectedType] = { count: 0, steel: 0 };
+              }
+              breakdown[res.selectedType].count += res.count;
+              breakdown[res.selectedType].steel += res.count * this.deviceSpecs.vents[res.selectedType].steel;
+            });
+            // Для сводки по системе выберем вариант с наибольшим количеством (как общее значение)
+            // и сформируем строку с разбивкой.
+            // Здесь для простоты суммируем по всем типам.
+            totalCount = Object.values(breakdown).reduce((sum, v) => sum + v.count, 0);
+            totalSteel = Object.values(breakdown).reduce((sum, v) => sum + v.steel, 0);
+            // Также сформируем строку с описанием (например, "Большая напольная вентиляция: X шт; Маленькая настенная вентиляция: Y шт")
+            let descArr = [];
+            for (let type in breakdown) {
+              descArr.push(`${this.deviceSpecs.vents[type].name}: ${breakdown[type].count} шт`);
+            }
+            return { type: descArr.join('; '), count: totalCount, steel: totalSteel };
+          }
+        },
+        getVentInfo(system) {
+          const res = this.getVentResources(system);
+          return `${res.count} шт, ${res.type}`;
+        },
+        getVentCount(system) {
+          return this.getVentResources(system).count;
+        },
+        // Потребляемая мощность = мощность вентиляторов + мощность центральных блоков.
+        calculatePower(system) {
+          const fans = this.getFanCount(system);
+          const units = this.getUnitCount(system);
+          const fanType = system.fanType === 'auto' ? this.autoSelectFan(system).selectedType : system.fanType;
+          const unitType = system.centralUnitType === 'auto' ? this.autoSelectUnit(system).selectedType : system.centralUnitType;
+          const fanPower = fans * this.deviceSpecs.fans[fanType].power;
+          const unitPower = units * this.deviceSpecs.units[unitType].power;
+          return fanPower + unitPower;
+        },
+        addSystem() {
+          this.systems.push({
+            fanType: 'auto',
+            centralUnitType: 'auto',
+            ventType: 'auto',
+            rooms: [{ length: 3, width: 4, doubleWall: false }]
+          });
+        },
+        removeSystem(index) {
+          this.systems.splice(index, 1);
+        },
+        addRoom(systemIndex) {
+          this.systems[systemIndex].rooms.push({ length: 3, width: 4, doubleWall: false });
+        },
+        removeRoom(systemIndex, roomIndex) {
+          this.systems[systemIndex].rooms.splice(roomIndex, 1);
+        },
+        // Для общей сводки по вентиляционным отверстиям – агрегируем данные по всем системам.
+        autoSelectVentForSystem(system) {
+          // Для каждой системы, если ventType === 'auto', можно агрегировать результаты по комнатам.
+          if (system.ventType !== 'auto') {
+            let count = system.rooms.reduce((total, room) => {
+              let R = this.calculateRoomRequiredCapacity(room);
+              return total + Math.max(1, Math.round(R / this.deviceSpecs.vents[system.ventType].capacity));
+            }, 0);
+            return { selectedType: system.ventType, totalCount: count, totalSteel: count * this.deviceSpecs.vents[system.ventType].steel };
+          } else {
+            let breakdown = {};
+            system.rooms.forEach(room => {
+              let res = this.autoSelectVentForRoom(room);
+              if (!breakdown[res.selectedType]) {
+                breakdown[res.selectedType] = { count: 0, steel: 0 };
+              }
+              breakdown[res.selectedType].count += res.count;
+              breakdown[res.selectedType].steel += res.count * this.deviceSpecs.vents[res.selectedType].steel;
+            });
+            let totalCount = Object.values(breakdown).reduce((sum, v) => sum + v.count, 0);
+            let totalSteel = Object.values(breakdown).reduce((sum, v) => sum + v.steel, 0);
+            // Выбираем описание с наименьшим общим количеством, если необходимо.
+            let descArr = [];
+            for (let type in breakdown) {
+              descArr.push(`${this.deviceSpecs.vents[type].name}: ${breakdown[type].count} шт`);
+            }
+            return { selectedType: descArr.join('; '), totalCount, totalSteel };
+          }
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>
