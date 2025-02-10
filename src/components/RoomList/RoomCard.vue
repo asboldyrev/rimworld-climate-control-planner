@@ -1,4 +1,7 @@
 <script setup>
+    import { computed } from 'vue'
+    import { ROOM_VALIDATION } from '@/constants/validation'
+
     const props = defineProps({
         modelValue: {
             type: Object,
@@ -16,19 +19,43 @@
     const emit = defineEmits(['update:modelValue', 'remove'])
 
     const updateRoom = (field, value) => {
+        const newValue = field === 'doubleWall' ? value : Number(value)
         emit('update:modelValue', {
             ...props.modelValue,
-            [field]: field === 'doubleWall' ? value : Number(value)
+            [field]: newValue
         })
     }
+
+    const roomArea = computed(() => props.modelValue.length * props.modelValue.width)
+
+    const errors = computed(() => {
+        const result = {}
+
+        if (props.modelValue.length < ROOM_VALIDATION.length.min) {
+            result.length = ROOM_VALIDATION.length.message
+        }
+
+        if (props.modelValue.width < ROOM_VALIDATION.width.min) {
+            result.width = ROOM_VALIDATION.width.message
+        }
+
+        return result
+    })
+
+    const hasErrors = computed(() => Object.keys(errors.value).length > 0)
 </script>
 
 <template>
-    <div class="box">
+    <div class="box" :class="{ 'has-error': hasErrors }">
         <div class="level is-mobile mb-3">
             <div class="level-left">
                 <div class="level-item">
-                    <h5 class="title is-6 mb-0">Комната {{ index + 1 }}</h5>
+                    <h5 class="title is-6 mb-0">
+                        Комната {{ index + 1 }}
+                        <span class="has-text-grey-light is-size-7">
+                            ({{ roomArea }} клеток)
+                        </span>
+                    </h5>
                 </div>
             </div>
             <div class="level-right">
@@ -45,15 +72,17 @@
         <div class="field">
             <label class="label is-small">Длина</label>
             <div class="control">
-                <input class="input" type="number" min="1" :value="modelValue.length" @input="updateRoom('length', $event.target.value)">
+                <input class="input" :class="{ 'is-danger': errors.length }" type="number" :min="ROOM_VALIDATION.length.min" :value="modelValue.length" @input="updateRoom('length', $event.target.value)">
             </div>
+            <p v-if="errors.length" class="help is-danger">{{ errors.length }}</p>
         </div>
 
         <div class="field">
             <label class="label is-small">Ширина</label>
             <div class="control">
-                <input class="input" type="number" min="1" :value="modelValue.width" @input="updateRoom('width', $event.target.value)">
+                <input class="input" :class="{ 'is-danger': errors.width }" type="number" :min="ROOM_VALIDATION.width.min" :value="modelValue.width" @input="updateRoom('width', $event.target.value)">
             </div>
+            <p v-if="errors.width" class="help is-danger">{{ errors.width }}</p>
         </div>
 
         <div class="field">
@@ -70,6 +99,11 @@
 <style scoped>
     .box {
         height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .box.has-error {
+        border: 1px solid hsl(348, 100%, 61%);
     }
 
     .level.is-mobile {
@@ -86,5 +120,15 @@
 
     .checkbox {
         font-size: 0.875rem;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 </style>
