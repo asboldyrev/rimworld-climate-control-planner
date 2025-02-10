@@ -17,11 +17,15 @@
     const calculateTotalVentCount = (type) => {
         return systems.reduce((sum, sys) => {
             if (sys.ventType === type) {
-                return sum + calculateTotalVents(sys)
+                return sum + sys.rooms.reduce((total, room) => {
+                    const count = room.count || 1
+                    return total + (calculateRoomVents(room, sys) * count)
+                }, 0)
             }
             return sum + (sys.ventType === 'auto' ? sys.rooms.reduce((roomSum, room) => {
                 const info = autoSelectVentForRoom(room)
-                return roomSum + (info.selectedType === type ? info.count : 0)
+                const count = room.count || 1
+                return roomSum + (info.selectedType === type ? info.count * count : 0)
             }, 0) : 0)
         }, 0)
     }
@@ -29,11 +33,15 @@
     const calculateTotalVentSteel = (type) => {
         return systems.reduce((sum, sys) => {
             if (sys.ventType === type) {
-                return sum + calculateTotalVents(sys) * deviceSpecs.vents[type].steel
+                return sum + sys.rooms.reduce((total, room) => {
+                    const count = room.count || 1
+                    return total + (calculateRoomVents(room, sys) * count * deviceSpecs.vents[type].steel)
+                }, 0)
             }
             return sum + (sys.ventType === 'auto' ? sys.rooms.reduce((roomSum, room) => {
                 const info = autoSelectVentForRoom(room)
-                return roomSum + (info.selectedType === type ? info.count * deviceSpecs.vents[type].steel : 0)
+                const count = room.count || 1
+                return roomSum + (info.selectedType === type ? info.count * count * deviceSpecs.vents[type].steel : 0)
             }, 0) : 0)
         }, 0)
     }

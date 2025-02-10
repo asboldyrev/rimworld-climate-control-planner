@@ -29,13 +29,14 @@
     const addRoom = () => {
         emit('update:modelValue', [
             ...props.modelValue,
-            { length: 3, width: 4, doubleWall: false }
+            { length: 3, width: 4, doubleWall: false, useArea: false, count: 1 }
         ])
     }
 
     const totalCapacity = computed(() => {
         return props.modelValue.reduce((total, room) => {
-            return total + calculateRoomRequiredCapacity(room)
+            const count = room.count || 1
+            return total + (calculateRoomRequiredCapacity(room) * count)
         }, 0)
     })
 </script>

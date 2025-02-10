@@ -26,17 +26,72 @@
         })
     }
 
-    const roomArea = computed(() => props.modelValue.length * props.modelValue.width)
+    const roomArea = computed(() => {
+        if (props.modelValue.useArea) {
+            return props.modelValue.area || 0
+        }
+        return props.modelValue.length * props.modelValue.width
+    })
+
+    const isAreaMode = computed({
+        get: () => props.modelValue.useArea ?? false,
+        set: (value) => {
+            const updates = { useArea: value }
+
+            if (value) {
+                // При переключении в режим площади, сохраняем текущую площадь
+                updates.area = roomArea.value
+            } else {
+                // При переключении в режим размеров, вычисляем примерные размеры из площади
+                const area = props.modelValue.area || roomArea.value
+                const side = Math.sqrt(area)
+                updates.length = Math.ceil(side)
+                updates.width = Math.ceil(area / updates.length)
+                delete updates.area
+            }
+
+            emit('update:modelValue', {
+                ...props.modelValue,
+                ...updates
+            })
+        }
+    })
+
+    const updateArea = (value) => {
+        const newArea = Number(value)
+        const side = Math.sqrt(newArea)
+        const length = Math.ceil(side)
+        const width = Math.ceil(newArea / length)
+
+        emit('update:modelValue', {
+            ...props.modelValue,
+            area: newArea,
+            length,
+            width
+        })
+    }
+
+    const totalArea = computed(() => {
+        const baseArea = roomArea.value
+        const count = props.modelValue.count || 1
+        return baseArea * count
+    })
 
     const errors = computed(() => {
         const result = {}
 
-        if (props.modelValue.length < ROOM_VALIDATION.length.min) {
-            result.length = ROOM_VALIDATION.length.message
-        }
+        if (!isAreaMode.value) {
+            if (props.modelValue.length < ROOM_VALIDATION.length.min) {
+                result.length = ROOM_VALIDATION.length.message
+            }
 
-        if (props.modelValue.width < ROOM_VALIDATION.width.min) {
-            result.width = ROOM_VALIDATION.width.message
+            if (props.modelValue.width < ROOM_VALIDATION.width.min) {
+                result.width = ROOM_VALIDATION.width.message
+            }
+        } else {
+            if (roomArea.value < ROOM_VALIDATION.length.min * ROOM_VALIDATION.width.min) {
+                result.area = 'Площадь слишком маленькая'
+            }
         }
 
         return result
@@ -53,7 +108,7 @@
                     <h5 class="title is-6 mb-0">
                         Комната {{ index + 1 }}
                         <span class="has-text-grey-light is-size-7">
-                            ({{ roomArea }} клеток)
+                            ({{ totalArea }} клеток)
                         </span>
                     </h5>
                 </div>
@@ -70,19 +125,45 @@
         </div>
 
         <div class="field">
-            <label class="label is-small">Длина</label>
-            <div class="control">
-                <input class="input" :class="{ 'is-danger': errors.length }" type="number" :min="ROOM_VALIDATION.length.min" :value="modelValue.length" @input="updateRoom('length', $event.target.value)">
-            </div>
-            <p v-if="errors.length" class="help is-danger">{{ errors.length }}</p>
+            <label class="checkbox">
+                <input type="checkbox" v-model="isAreaMode">
+                Задать через площадь
+            </label>
         </div>
 
-        <div class="field">
-            <label class="label is-small">Ширина</label>
-            <div class="control">
-                <input class="input" :class="{ 'is-danger': errors.width }" type="number" :min="ROOM_VALIDATION.width.min" :value="modelValue.width" @input="updateRoom('width', $event.target.value)">
+        <template v-if="!isAreaMode">
+            <div class="field">
+                <label class="label is-small">Длина</label>
+                <div class="control">
+                    <input class="input" :class="{ 'is-danger': errors.length }" type="number" :min="ROOM_VALIDATION.length.min" :value="modelValue.length" @input="updateRoom('length', $event.target.value)">
+                </div>
+                <p v-if="errors.length" class="help is-danger">{{ errors.length }}</p>
             </div>
-            <p v-if="errors.width" class="help is-danger">{{ errors.width }}</p>
+
+            <div class="field">
+                <label class="label is-small">Ширина</label>
+                <div class="control">
+                    <input class="input" :class="{ 'is-danger': errors.width }" type="number" :min="ROOM_VALIDATION.width.min" :value="modelValue.width" @input="updateRoom('width', $event.target.value)">
+                </div>
+                <p v-if="errors.width" class="help is-danger">{{ errors.width }}</p>
+            </div>
+        </template>
+
+        <template v-else>
+            <div class="field">
+                <label class="label is-small">Площадь</label>
+                <div class="control">
+                    <input class="input" :class="{ 'is-danger': errors.area }" type="number" :min="ROOM_VALIDATION.length.min * ROOM_VALIDATION.width.min" :value="modelValue.area" @input="updateArea($event.target.value)">
+                </div>
+                <p v-if="errors.area" class="help is-danger">{{ errors.area }}</p>
+            </div>
+        </template>
+
+        <div class="field">
+            <label class="label is-small">Количество комнат</label>
+            <div class="control">
+                <input class="input" type="number" min="1" :value="modelValue.count || 1" @input="updateRoom('count', $event.target.value)">
+            </div>
         </div>
 
         <div class="field">

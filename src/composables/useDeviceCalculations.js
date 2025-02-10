@@ -6,8 +6,10 @@ export function useDeviceCalculations() {
 
     // Вентиляторы
     const autoSelectFan = (system) => {
-        const totalCapacity = system.rooms.reduce((total, room) =>
-            total + calculateRoomRequiredCapacity(room), 0)
+        const totalCapacity = system.rooms.reduce((total, room) => {
+            const count = room.count || 1
+            return total + (calculateRoomRequiredCapacity(room) * count)
+        }, 0)
 
         const countSmall = Math.ceil(totalCapacity / deviceSpecs.fans.smallFan.capacity)
         const costSmall = countSmall * deviceSpecs.fans.smallFan.steel +
@@ -27,15 +29,19 @@ export function useDeviceCalculations() {
     }
 
     const calculateFansManual = (system) => {
-        const totalCapacity = system.rooms.reduce((total, room) =>
-            total + calculateRoomRequiredCapacity(room), 0)
+        const totalCapacity = system.rooms.reduce((total, room) => {
+            const count = room.count || 1
+            return total + (calculateRoomRequiredCapacity(room) * count)
+        }, 0)
         return Math.ceil(totalCapacity / deviceSpecs.fans[system.fanType].capacity)
     }
 
     // Центральные блоки
     const autoSelectUnit = (system) => {
-        const totalCapacity = system.rooms.reduce((total, room) =>
-            total + calculateRoomRequiredCapacity(room), 0)
+        const totalCapacity = system.rooms.reduce((total, room) => {
+            const count = room.count || 1
+            return total + (calculateRoomRequiredCapacity(room) * count)
+        }, 0)
 
         const countSmall = Math.ceil(totalCapacity / deviceSpecs.units.smallUnit.capacity)
         const costSmall = countSmall * deviceSpecs.units.smallUnit.steel +
@@ -55,8 +61,10 @@ export function useDeviceCalculations() {
     }
 
     const calculateUnitsManual = (system) => {
-        const totalCapacity = system.rooms.reduce((total, room) =>
-            total + calculateRoomRequiredCapacity(room), 0)
+        const totalCapacity = system.rooms.reduce((total, room) => {
+            const count = room.count || 1
+            return total + (calculateRoomRequiredCapacity(room) * count)
+        }, 0)
         return Math.ceil(totalCapacity / deviceSpecs.units[system.centralUnitType].capacity)
     }
 

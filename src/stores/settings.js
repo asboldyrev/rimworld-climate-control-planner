@@ -12,7 +12,7 @@ const DEFAULT_SYSTEM = {
     fanType: 'auto',
     centralUnitType: 'auto',
     ventType: 'auto',
-    rooms: [{ length: 3, width: 4, doubleWall: false }]
+    rooms: [{ length: 3, width: 4, doubleWall: false, useArea: false, count: 1 }]
 }
 
 export const useSettingsStore = defineStore('settings', {

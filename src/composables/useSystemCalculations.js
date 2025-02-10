@@ -51,8 +51,10 @@ export function useSystemCalculations() {
     // Расчет ресурсов для вентиляции
     const getVentResources = (system) => {
         if (system.ventType !== 'auto') {
-            const totalCount = system.rooms.reduce((total, room) =>
-                total + calculateRoomVents(room, system), 0)
+            const totalCount = system.rooms.reduce((total, room) => {
+                const count = room.count || 1
+                return total + (calculateRoomVents(room, system) * count)
+            }, 0)
             const totalSteel = totalCount * deviceSpecs.vents[system.ventType].steel
             return {
                 type: deviceSpecs.vents[system.ventType].name,
@@ -63,11 +65,12 @@ export function useSystemCalculations() {
             const breakdown = {}
             system.rooms.forEach(room => {
                 const res = autoSelectVentForRoom(room)
+                const count = room.count || 1
                 if (!breakdown[res.selectedType]) {
                     breakdown[res.selectedType] = { count: 0, steel: 0 }
                 }
-                breakdown[res.selectedType].count += res.count
-                breakdown[res.selectedType].steel += res.count * deviceSpecs.vents[res.selectedType].steel
+                breakdown[res.selectedType].count += res.count * count
+                breakdown[res.selectedType].steel += res.count * count * deviceSpecs.vents[res.selectedType].steel
             })
 
             const totalCount = Object.values(breakdown).reduce((sum, v) => sum + v.count, 0)
