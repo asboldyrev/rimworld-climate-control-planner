@@ -12,11 +12,6 @@ export default defineConfig({
   },
   base: '/rimworld-climate-control-planner/',
   build: {
-    outDir: 'docs',
-    rollupOptions: {
-      output: {
-        manualChunks: undefined
-      }
-    }
+    outDir: 'dist',
   }
 })
