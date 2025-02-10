@@ -4,13 +4,10 @@
     import { useDeviceCalculations } from '@/composables/useDeviceCalculations'
     import { useSystemCalculations } from '@/composables/useSystemCalculations'
     import { useRoomCalculations } from '@/composables/useRoomCalculations'
+    import { useSystemsStore } from '@/stores/systems'
 
-    const props = defineProps({
-        systems: {
-            type: Array,
-            required: true
-        }
-    })
+    const store = useSystemsStore()
+    const { systems } = store
 
     const { autoSelectFan, autoSelectUnit } = useDeviceCalculations()
     const { getFanResources, getUnitResources, getVentResources, calculateSystemResources } = useSystemCalculations()
@@ -18,7 +15,7 @@
 
     // Вспомогательные функции для вентиляции
     const calculateTotalVentCount = (type) => {
-        return props.systems.reduce((sum, sys) => {
+        return systems.reduce((sum, sys) => {
             if (sys.ventType === type) {
                 return sum + calculateTotalVents(sys)
             }
@@ -30,7 +27,7 @@
     }
 
     const calculateTotalVentSteel = (type) => {
-        return props.systems.reduce((sum, sys) => {
+        return systems.reduce((sum, sys) => {
             if (sys.ventType === type) {
                 return sum + calculateTotalVents(sys) * deviceSpecs.vents[type].steel
             }
@@ -47,7 +44,7 @@
 
     // Вычисляемые итоги
     const totalDeviceCount = computed(() => {
-        return props.systems.reduce((total, sys) => {
+        return systems.reduce((total, sys) => {
             const fanRes = getFanResources(sys)
             const unitRes = getUnitResources(sys)
             const ventRes = getVentResources(sys)
@@ -56,21 +53,21 @@
     })
 
     const totalSteel = computed(() => {
-        return props.systems.reduce((total, sys) => {
+        return systems.reduce((total, sys) => {
             const resources = calculateSystemResources(sys)
             return total + resources.steel
         }, 0)
     })
 
     const totalComponents = computed(() => {
-        return props.systems.reduce((total, sys) => {
+        return systems.reduce((total, sys) => {
             const resources = calculateSystemResources(sys)
             return total + resources.components
         }, 0)
     })
 
     const totalPower = computed(() => {
-        return props.systems.reduce((total, sys) => {
+        return systems.reduce((total, sys) => {
             const resources = calculateSystemResources(sys)
             return total + resources.power
         }, 0)

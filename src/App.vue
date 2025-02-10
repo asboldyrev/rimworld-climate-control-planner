@@ -1,13 +1,5 @@
 <script setup>
-  import { ref, computed } from 'vue'
   import SystemList from '@/components/SystemList/SystemList.vue'
-
-  const systems = ref([{
-    fanType: 'auto',
-    centralUnitType: 'auto',
-    ventType: 'auto',
-    rooms: [{ length: 3, width: 4, doubleWall: false }]
-  }])
 </script>
 
 <template>
@@ -17,7 +9,7 @@
         <h1 class="title">RimWorld CCC Калькулятор</h1>
         <p class="subtitle">Планировщик систем централизованного климат-контроля</p>
       </div>
-      <SystemList v-model="systems" />
+      <SystemList />
     </div>
   </section>
 </template>
