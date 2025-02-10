@@ -3,6 +3,8 @@
     import RoomList from '@/components/RoomList/RoomList.vue'
     import SystemWarnings from '@/components/SystemWarnings.vue'
     import { useSystemCalculations } from '@/composables/useSystemCalculations'
+    import { useRoomCalculations } from '@/composables/useRoomCalculations'
+    import { deviceSpecs } from '@/constants/deviceSpecs'
     import { computed } from 'vue'
 
     const props = defineProps({
@@ -22,6 +24,7 @@
     const emit = defineEmits(['update:modelValue', 'remove'])
 
     const { getFanResources, getUnitResources, getVentResources } = useSystemCalculations()
+    const { autoSelectVentForRoom, calculateRoomVents } = useRoomCalculations()
 
     // Создаем вычисляемое свойство для системы
     const system = computed({
@@ -34,6 +37,21 @@
             ...props.modelValue,
             ...newData
         })
+    }
+
+    const calculateVentCount = (type) => {
+        if (system.value.ventType === type) {
+            return system.value.rooms.reduce((total, room) => total + calculateRoomVents(room, system.value), 0)
+        }
+        return system.value.ventType === 'auto' ? system.value.rooms.reduce((sum, room) => {
+            const info = autoSelectVentForRoom(room)
+            return sum + (info.selectedType === type ? info.count : 0)
+        }, 0) : 0
+    }
+
+    const calculateVentSteel = (type) => {
+        const count = calculateVentCount(type)
+        return count * deviceSpecs.vents[type].steel
     }
 </script>
 
@@ -94,14 +112,19 @@
                             <td class="has-text-right">{{ getUnitResources(system).components }}</td>
                             <td class="has-text-right">{{ getUnitResources(system).power }}</td>
                         </tr>
-                        <tr>
-                            <td>Вентиляция</td>
-                            <td>{{ getVentResources(system).type }}</td>
-                            <td class="has-text-right">{{ getVentResources(system).count }}</td>
-                            <td class="has-text-right">{{ getVentResources(system).steel }}</td>
-                            <td class="has-text-center">-</td>
-                            <td class="has-text-center">-</td>
-                        </tr>
+                        <template v-for="(vent, type) in deviceSpecs.vents" :key="type">
+                            <tr v-if="
+                                system.ventType === type ||
+                                (system.ventType === 'auto' && system.rooms.some(room => autoSelectVentForRoom(room).selectedType === type))
+                            ">
+                                <td>Вентиляция</td>
+                                <td>{{ vent.name }}</td>
+                                <td class="has-text-right">{{ calculateVentCount(type) }}</td>
+                                <td class="has-text-right">{{ calculateVentSteel(type) }}</td>
+                                <td class="has-text-center">-</td>
+                                <td class="has-text-center">-</td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>

@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, watch } from 'vue'
     import { storeToRefs } from 'pinia'
     import { useSystemsStore } from '@/stores/systems'
     import { useSettingsStore } from '@/stores/settings'
@@ -9,45 +9,43 @@
     const systemsStore = useSystemsStore()
     const settingsStore = useSettingsStore()
     const { systems } = storeToRefs(systemsStore)
-    const { saveEnabled } = storeToRefs(settingsStore)
 
-    const fileInput = ref(null)
+    // Следим за изменениями в системах и сохраняем их, если включено автосохранение
+    watch(
+        systems,
+        () => {
+            if (settingsStore.settings.autoSave) {
+                localStorage.setItem(`climate-control-${systemsStore.$id}`, JSON.stringify(systems.value))
+            }
+        },
+        { deep: true }
+    )
 
-    const handleImport = async (event) => {
-        const file = event.target.files?.[0]
-        if (!file) return
-
-        const success = await systemsStore.importConfig(file)
-        if (!success) {
-            alert('Ошибка при импорте файла. Проверьте формат файла и попробуйте снова.')
-        }
-
-        event.target.value = ''
+    // Загружаем сохраненные данные при монтировании компонента
+    const savedData = localStorage.getItem(`climate-control-${systemsStore.$id}`)
+    if (savedData) {
+        systemsStore.systems = JSON.parse(savedData)
     }
 
     const toggleSaveEnabled = (event) => {
-        const newValue = event.target.checked
-
-        if (!newValue) {
-            const hasChanges = JSON.stringify(systems.value) !== JSON.stringify([{
-                fanType: 'auto',
-                centralUnitType: 'auto',
-                ventType: 'auto',
-                rooms: [{ length: 3, width: 4, doubleWall: false }]
-            }])
-
-            if (!hasChanges || confirm('Вы уверены, что хотите отключить автосохранение? Данные будут удалены из локального хранилища, но текущие настройки останутся без изменений.')) {
-                settingsStore.toggleSave(newValue)
-                localStorage.removeItem(`climate-control-systems`)
-            } else {
+        const shouldRevert = settingsStore.setAutoSave(event.target.checked)
+        if (shouldRevert) {
+            // Если пользователь отменил действие, возвращаем чекбокс в включенное состояние
+            setTimeout(() => {
                 event.target.checked = true
+            }, 0)
+        } else if (event.target.checked) {
+            localStorage.setItem(`climate-control-${systemsStore.$id}`, JSON.stringify(systems.value))
+        }
+    }
+
+    const handleImport = async (event) => {
+        const file = event.target.files?.[0]
+        if (file) {
+            const success = await systemsStore.importConfig(file)
+            if (success) {
+                event.target.value = ''
             }
-        } else {
-            settingsStore.toggleSave(newValue)
-            // Сразу сохраняем текущее состояние
-            localStorage.setItem('climate-control-systems', JSON.stringify({
-                systems: systems.value
-            }))
         }
     }
 </script>
@@ -65,7 +63,7 @@
                     </button>
                 </div>
                 <div class="level-item">
-                    <button class="button" @click="fileInput?.click()">
+                    <button class="button" @click="$refs.fileInput.click()">
                         <span class="icon">
                             <i class="ri-upload-line"></i>
                         </span>
@@ -85,7 +83,7 @@
             <div class="level-right">
                 <div class="level-item">
                     <label class="checkbox">
-                        <input type="checkbox" :checked="saveEnabled" @change="toggleSaveEnabled">
+                        <input type="checkbox" :checked="settingsStore.settings.autoSave" @change="toggleSaveEnabled">
                         Автосохранение
                     </label>
                 </div>

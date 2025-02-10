@@ -1,0 +1,119 @@
+/* Глобальные стили для селектов */
+.select:not(.is-multiple):not(.is-loading)::after {
+  margin-top: -0.6em !important;
+}
+
+/* Темная тема */
+html.is-dark {
+  /* Основные цвета */
+  --background: #0a0a0a;
+  --text: #dbdbdb;
+  --box-background: #242424;
+  --box-shadow: 0 0.5em 1em -0.125em rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  
+  /* Переопределение стилей Bulma */
+  background-color: var(--background);
+  color: var(--text);
+}
+
+/* Основные элементы */
+html.is-dark .title,
+html.is-dark .subtitle,
+html.is-dark .label {
+  color: var(--text);
+}
+
+html.is-dark .box {
+  background-color: var(--box-background);
+  color: var(--text);
+  box-shadow: var(--box-shadow);
+}
+
+html.is-dark .box.is-light {
+  background-color: #1a1a1a;
+}
+
+/* Поля ввода */
+html.is-dark .input,
+html.is-dark .select select {
+  background-color: #363636;
+  border-color: #4a4a4a;
+  color: var(--text);
+}
+
+/* Исправление стрелки в селектах */
+html.is-dark .select:not(.is-multiple):not(.is-loading)::after {
+  border-color: var(--text);
+}
+
+
+/* Или можно попробовать этот вариант, если предыдущий не сработает */
+html.is-dark .select:not(.is-multiple):not(.is-loading)::after {
+  border-color: var(--text);
+  margin-top: -0.375em;
+  top: 50%;
+}
+
+/* Кнопки */
+html.is-dark .button {
+  background-color: #363636;
+  border-color: #4a4a4a;
+  color: var(--text);
+}
+
+/* Сохраняем цвета для цветных кнопок */
+html.is-dark .button.is-danger {
+  background-color: #f14668;
+  border-color: transparent;
+  color: #fff;
+}
+
+html.is-dark .button.is-success,
+html.is-dark .button.is-primary {
+  background-color: #48c78e;
+  border-color: transparent;
+  color: #fff;
+}
+
+html.is-dark .button.is-success:hover,
+html.is-dark .button.is-primary:hover {
+  background-color: #3ec487;
+}
+
+html.is-dark .button.is-danger:hover {
+  background-color: #ef2e55;
+}
+
+/* Уведомления */
+html.is-dark .notification.is-warning.is-light {
+  background-color: #3d3524;
+  border: 1px solid #433b27;
+  color: #ffe08a;
+}
+
+/* Таблицы */
+html.is-dark .table {
+  background-color: var(--box-background);
+  color: var(--text);
+}
+
+html.is-dark .table td,
+html.is-dark .table th {
+  border-color: #363636;
+  color: var(--text);
+}
+
+html.is-dark .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+  background-color: #1a1a1a;
+}
+
+/* Итоговая строка в таблице */
+html.is-dark .has-background-info-light {
+  background-color: #1a1a1a !important;
+  color: var(--text);
+}
+
+/* Стили для стрелки в темной теме */
+html.is-dark .select:not(.is-multiple):not(.is-loading)::after {
+  border-color: var(--text);
+} 

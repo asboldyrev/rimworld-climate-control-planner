@@ -1,17 +1,39 @@
 <script setup>
+  import { onMounted } from 'vue'
   import SystemList from '@/components/SystemList/SystemList.vue'
+  import ThemeToggle from '@/components/ThemeToggle.vue'
+  import { useSettingsStore } from '@/stores/settings'
+
+  const settingsStore = useSettingsStore()
+
+  onMounted(() => {
+    settingsStore.initSettings()
+  })
 </script>
 
 <template>
-  <section class="section">
-    <div class="container">
-      <div class="has-text-centered mb-6">
-        <h1 class="title">RimWorld CCC Калькулятор</h1>
-        <p class="subtitle">Планировщик систем централизованного климат-контроля</p>
+  <div class="container is-max-desktop p-4">
+    <div class="level mb-6">
+      <div class="level-left">
+        <div class="level-item">
+          <div>
+            <h1 class="title">
+              RimWorld CCC Калькулятор
+            </h1>
+            <h2 class="subtitle">
+              Планировщик систем централизованного климат-контроля
+            </h2>
+          </div>
+        </div>
       </div>
-      <SystemList />
+      <div class="level-right">
+        <div class="level-item">
+          <ThemeToggle />
+        </div>
+      </div>
     </div>
-  </section>
+    <SystemList />
+  </div>
 </template>
 
 <style>
