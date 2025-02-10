@@ -1,6 +1,7 @@
 <script setup>
     import EquipmentSelector from '@/components/EquipmentSelector/EquipmentSelector.vue'
     import RoomList from '@/components/RoomList/RoomList.vue'
+    import SystemWarnings from '@/components/SystemWarnings.vue'
     import { useSystemCalculations } from '@/composables/useSystemCalculations'
     import { computed } from 'vue'
 
@@ -55,6 +56,8 @@
                 </div>
             </div>
         </div>
+
+        <SystemWarnings :rooms="system.rooms" class="mb-5" />
 
         <EquipmentSelector :model-value="system" @update:model-value="updateSystem" class="mb-5" />
 
