@@ -4,7 +4,7 @@ This document describes the architecture that exists now. Planned changes must b
 
 ## Current shape
 
-The current application has two intentionally separate layers:
+The application now has a framework-independent climate domain with a first composed heating use-case layer:
 
 ```text
 Vue UI / shadcn-vue-compatible local components
@@ -14,16 +14,13 @@ Vue UI / shadcn-vue-compatible local components
           (Pinia)
               |
               v
-     future calculator use-cases
+  heating capacity use-cases
               |
               v
-   src/domain/climate/vanilla
-    rules / constants / primitives
+   source-backed vanilla core
 ```
 
-The vanilla calculation core now exists and has no Vue, Pinia, DOM or browser-storage dependency.
-
-Calculator use-cases that select device counts and connect the domain core to UI state are the next layer to build.
+Vue/Pinia do not participate in thermal calculations.
 
 ## Frontend
 
@@ -32,102 +29,91 @@ Current frontend technologies:
 - Vue;
 - Vite;
 - Pinia;
-- Tailwind CSS v4 through `@tailwindcss/vite`;
-- shadcn-vue project configuration and local component structure;
+- Tailwind CSS v4;
+- shadcn-vue-compatible local UI components;
 - `@lucide/vue`;
-- Vitest/Vue Test Utils/jsdom for automated tests.
+- Vitest/Vue Test Utils/jsdom.
 
-Vue Router is not installed because the application currently has one navigation surface.
-
-## UI component boundary
-
-UI primitives live in `src/components/ui`.
-
-Application/domain components should compose these primitives instead of building a competing generic component system.
-
-## State ownership
-
-Pinia is application infrastructure for shared UI/application state.
-
-Local UI state belongs in components.
-
-Thermal mechanics must not live inside Pinia. Stores may hold calculator configuration/results and invoke use-cases, but domain rules remain framework-independent and directly testable.
+Vue Router remains intentionally absent while there is one navigation surface.
 
 ## Calculation domain
 
-The vanilla domain core lives under:
+The vanilla domain lives under:
 
 ```text
 src/domain/climate/vanilla/
 ├── constants.js
 ├── devices.js
+├── heating.js
 ├── room.js
 └── index.js
 ```
 
 Responsibilities:
 
-- `constants.js` — supported game version and source-backed numeric constants;
-- `room.js` — room geometry and low-level room temperature primitives;
-- `devices.js` — device-specific source-backed behavior;
-- `index.js` — public exports.
+- `constants.js` — supported game version and source-backed constants;
+- `room.js` — source-backed room thermal primitives plus simple rectangular geometry helper;
+- `devices.js` — source-backed device behavior primitives;
+- `heating.js` — composed rectangular-room heating demand, capacity recommendations and Heater equilibrium;
+- `index.js` — public domain exports.
 
-The domain layer validates its own primitive inputs and throws on structurally invalid values rather than relying on Vue form validation.
+The domain validates structural inputs itself and remains independent from form validation.
 
-The current room geometry helper supports simple unobstructed rectangular rooms. Source-faithful thermal formulas are intentionally separated from this simplified geometry helper.
+## Heating capacity model
+
+Exact in-game device pulse phase cannot be inferred from ordinary planner inputs because rare ticks are hash-offset by individual Thing identity.
+
+ADR 0003 therefore defines capacity planning in average energy over the same 120-tick interval used by natural room equalization.
+
+This layer preserves temperature-dependent device efficiency/cutoffs but intentionally does not claim tick-for-tick temperature ripple.
+
+Current heating result contracts expose:
+
+- natural wall/roof temperature and energy change;
+- required heating energy and heat/s;
+- unit device effective capacity;
+- device count;
+- power margin;
+- whether a target is sustainable;
+- whether the device is thermostat-controlled;
+- unreachable reason where applicable.
+
+## Geometry accuracy boundary
+
+The current composed heating model supports a simple isolated unobstructed rectangular room with one- or two-layer exterior walls and roof coverage fractions.
+
+Source-faithful low-level formulas remain separate from the rectangular geometry helper so future room shapes, neighboring zones, doors and vents can extend the model without rewriting the thermal primitives.
+
+## State ownership
+
+Pinia is application infrastructure for shared UI/application state.
+
+Thermal mechanics and capacity recommendations must not move into Pinia. Stores may hold user input and derived result snapshots only.
 
 ## Source/provenance boundary
 
-`docs/RIMWORLD_TEMPERATURE_MODEL.md` records source files, formulas, constants and known approximation boundaries.
+`docs/RIMWORLD_TEMPERATURE_MODEL.md` records source files, formulas, timing assumptions and approximation boundaries.
 
-ADR 0002 pins the initial supported RimWorld version/source baseline.
+ADRs 0002 and 0003 define the supported game baseline and planner time model.
 
-Version upgrades must update code, documentation and affected tests together.
+## Future cooling and multi-room rules
 
-## Future calculator use-cases
+Cooler/Passive Cooler behavior is the next domain expansion after the first heating UI slice.
 
-The next application-independent layer will combine the primitives to answer user questions such as:
-
-- whether a target temperature is reachable;
-- equilibrium/stable temperature;
-- minimum number of heaters/coolers;
-- explanatory loss/output breakdown.
-
-These use-cases must remain outside Vue components and Pinia stores.
+Ventilation and adjacent rooms remain later features and must build on explicit thermal-zone boundaries rather than hidden assumptions in UI state.
 
 ## Future mod rulesets
 
-Centralized Climate Control support remains a future extension.
+Centralized Climate Control remains a future separate ruleset. Vanilla results must not change merely to simplify mod integration.
 
-Prefer a separate ruleset boundary such as:
+## Persistence, routing and backend
 
-```text
-calculator core
-├── vanilla rules
-└── mod rules
-    └── centralized-climate-control
-```
+Persistence is deferred until the data model stabilizes.
 
-Do not create abstraction layers before they solve a real shared problem.
+Vue Router should be introduced only for genuinely distinct URL-addressable surfaces.
 
-## Persistence
-
-Browser persistence is not part of the calculation authority.
-
-Legacy autosave/export/import code was removed with the old UI. These capabilities may be reconsidered after the rewrite data model is stable.
-
-## Routing
-
-Vue Router is intentionally not part of the current foundation.
-
-Introduce routing only when distinct application surfaces benefit from URLs and browser history.
-
-## No backend requirement
-
-The current product direction does not require a backend. Keep the application client-side unless a concrete product requirement justifies server-side infrastructure.
+No backend is required by the current product direction.
 
 ## Architecture change policy
 
-Current structure belongs in this document. Long-term decisions with meaningful alternatives/trade-offs also require an ADR.
-
-Future architecture must remain clearly labeled until implemented.
+Current structure belongs in this document. Durable modeling decisions with meaningful alternatives/trade-offs require ADRs.
