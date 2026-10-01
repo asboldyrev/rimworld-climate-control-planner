@@ -54,4 +54,12 @@ describe('heating calculator UI', () => {
     expect(wrapper.get('[data-testid="campfire-count"]').text()).toBe('Недостижимо')
     expect(wrapper.text()).toContain('Костёр прекращает новые тепловые импульсы при 28 °C')
   })
+
+  it('shows validation instead of throwing while a required numeric field is invalid', async () => {
+    const wrapper = mount(App)
+
+    await wrapper.get('[data-testid="width-input"]').setValue('')
+
+    expect(wrapper.get('[data-testid="validation-message"]').text()).toContain('Проверьте параметры')
+  })
 })
