@@ -22,52 +22,39 @@ Tests live under `tests/`.
 
 ## Calculation-core tests
 
-The calculation engine is the highest-value automated-test target.
-
 Pure domain tests live under `tests/domain/` and must not require Vue mounting or browser state.
 
-Current source-backed coverage includes:
+They protect source-backed mechanics, numerical boundaries and composed heating/cooling use-cases.
 
-- rectangular room geometry helper;
-- adjusted extreme outdoor-temperature difference;
-- thin/no/thick roof equalization;
-- low-level wall equalization;
-- simple single/double outdoor wall sample behavior;
-- thermostat-controlled temperature change;
-- Heater efficiency and TickRare output;
-- Campfire heat-push behavior.
+Detailed arithmetic belongs here rather than in frontend tests.
 
-When a source-backed mechanic is implemented, add deterministic tests for its important boundaries and representative numeric examples.
+## Frontend interaction tests
+
+`tests/frontend/App.test.js` protects the first heating calculator flow.
+
+Current coverage verifies:
+
+- default 10x10 / -30 C / +20 C recommendation;
+- room-size changes recalculate area/device count;
+- double walls reduce required heating;
+- Heater unreachable state above its effective cutoff;
+- Campfire cutoff warning.
+
+Frontend tests should assert user-visible behavior and representative results. They should not duplicate every domain numerical test.
 
 ## Source-backed scenarios
 
 Expected behavior should be traceable to game code, maintained documentation or controlled in-game verification.
 
-Tests must not merely encode whatever the current implementation happens to return.
-
-`docs/RIMWORLD_TEMPERATURE_MODEL.md` is the human-readable source map for implemented mechanics.
+`docs/RIMWORLD_TEMPERATURE_MODEL.md` remains the source map for implemented mechanics.
 
 When a game-version change alters verified mechanics, update source notes, tests and implementation together.
 
-## Frontend tests
-
-Use component/interaction tests for critical user flows rather than exhaustive visual snapshots.
-
-Protect interactions such as:
-
-- editing room/environment inputs updates results correctly;
-- switching device/ruleset options does not retain invalid stale state;
-- validation errors preserve user-entered configuration;
-- persisted/imported configurations restore safely if those features are implemented;
-- important warnings and impossible-target states are surfaced correctly.
-
-Pure CSS/layout adjustments generally do not require new tests unless they alter interaction semantics.
-
 ## Numerical comparisons
 
-Use exact equality for values that are structurally exact integers/flags.
+Use exact equality for structural values.
 
-Use `toBeCloseTo` for floating-point thermal calculations. Prefer enough precision to catch a changed game coefficient rather than masking it with a large tolerance.
+Use `toBeCloseTo` for floating-point thermal calculations with a tolerance tight enough to catch coefficient changes.
 
 ## Production build
 
@@ -81,16 +68,14 @@ Do not treat a successful build as proof that calculations are correct.
 
 ## Bug fixes
 
-When a calculation or critical-flow bug is fixed, add regression coverage when practical so the same behavior cannot silently return.
+When a calculation or critical-flow bug is fixed, add regression coverage when practical.
 
 ## CI
 
 CI is not yet established.
 
-When introduced, it should run on pull requests targeting `dev` and `main` and should include `npm test` plus `npm run build`.
+When introduced, it should run on pull requests targeting `dev` and `main` and include `npm test` plus `npm run build`.
 
 ## Verification truthfulness
 
 Do not claim a command/test passed unless it was actually run successfully.
-
-Update this document when frameworks, locations, canonical commands, CI gates, numerical-validation policy or the definition of critical coverage changes.

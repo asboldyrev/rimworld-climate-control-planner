@@ -4,23 +4,22 @@ This document describes the architecture that exists now. Planned changes must b
 
 ## Current shape
 
-The application now has a framework-independent climate domain with a first composed heating use-case layer:
+The application now has a complete first vertical slice:
 
 ```text
-Vue UI / shadcn-vue-compatible local components
-              |
-              v
-      application state
-          (Pinia)
-              |
-              v
-  heating capacity use-cases
-              |
-              v
-   source-backed vanilla core
+App.vue
+  |
+  v
+HeatingCalculator.vue
+  |
+  v
+framework-independent heating use-cases
+  |
+  v
+source-backed vanilla thermal core
 ```
 
-Vue/Pinia do not participate in thermal calculations.
+The Vue layer owns form state and presentation only. Thermal formulas and device recommendations remain in the domain layer.
 
 ## Frontend
 
@@ -34,86 +33,78 @@ Current frontend technologies:
 - `@lucide/vue`;
 - Vitest/Vue Test Utils/jsdom.
 
-Vue Router remains intentionally absent while there is one navigation surface.
+Vue Router remains intentionally absent while there is one calculator surface.
 
-## Calculation domain
+## Heating UI state
 
-The vanilla domain lives under:
+The first heating calculator keeps its state local to `HeatingCalculator.vue`.
 
-```text
-src/domain/climate/vanilla/
-├── constants.js
-├── devices.js
-├── heating.js
-├── room.js
-└── index.js
-```
+This is intentional: there is currently no meaningful cross-route or cross-component shared calculator state that would justify a Pinia store.
 
-Responsibilities:
+Pinia remains available for future state that genuinely crosses application boundaries.
 
-- `constants.js` — supported game version and source-backed constants;
-- `room.js` — source-backed room thermal primitives plus simple rectangular geometry helper;
-- `devices.js` — source-backed device behavior primitives;
-- `heating.js` — composed rectangular-room heating demand, capacity recommendations and Heater equilibrium;
-- `index.js` — public domain exports.
+## Calculation boundary
 
-The domain validates structural inputs itself and remains independent from form validation.
+`HeatingCalculator.vue` may:
 
-## Heating capacity model
+- normalize UI values;
+- construct a supported heating scenario;
+- invoke domain use-cases;
+- format results for display.
 
-Exact in-game device pulse phase cannot be inferred from ordinary planner inputs because rare ticks are hash-offset by individual Thing identity.
+It must not duplicate or reimplement:
 
-ADR 0003 therefore defines capacity planning in average energy over the same 120-tick interval used by natural room equalization.
+- wall/roof thermal formulas;
+- device efficiency/cutoff logic;
+- minimum-count calculations;
+- equilibrium logic.
 
-This layer preserves temperature-dependent device efficiency/cutoffs but intentionally does not claim tick-for-tick temperature ripple.
+Those remain under `src/domain/climate/vanilla`.
 
-Current heating result contracts expose:
+## Current user-facing model
 
-- natural wall/roof temperature and energy change;
-- required heating energy and heat/s;
-- unit device effective capacity;
-- device count;
-- power margin;
-- whether a target is sustainable;
-- whether the device is thermostat-controlled;
-- unreachable reason where applicable.
+The UI currently exposes only combinations that the domain model explicitly supports:
 
-## Geometry accuracy boundary
+- isolated rectangular rooms;
+- width/height geometry;
+- one- or two-layer exterior walls;
+- full thin roof;
+- full thick roof;
+- fully open roof;
+- fixed outdoor temperature;
+- heating target temperature.
 
-The current composed heating model supports a simple isolated unobstructed rectangular room with one- or two-layer exterior walls and roof coverage fractions.
+The UI does not simulate partial/mixed roofs, doors, neighboring rooms or vents yet.
 
-Source-faithful low-level formulas remain separate from the rectangular geometry helper so future room shapes, neighboring zones, doors and vents can extend the model without rewriting the thermal primitives.
+## Result contract
 
-## State ownership
+The heating UI presents:
 
-Pinia is application infrastructure for shared UI/application state.
+- room area;
+- required heat/s at target temperature;
+- wall and roof temperature change per 120 ticks;
+- minimum Heater count;
+- Heater power margin;
+- minimum Campfire count;
+- Campfire non-thermostatic warning;
+- unreachable device state where relevant.
 
-Thermal mechanics and capacity recommendations must not move into Pinia. Stores may hold user input and derived result snapshots only.
+## Testing boundary
 
-## Source/provenance boundary
+Frontend tests verify that changing UI inputs changes visible results according to the domain use-cases.
 
-`docs/RIMWORLD_TEMPERATURE_MODEL.md` records source files, formulas, timing assumptions and approximation boundaries.
-
-ADRs 0002 and 0003 define the supported game baseline and planner time model.
+They do not reproduce domain arithmetic inside the test suite; detailed numerical mechanics remain covered by `tests/domain/`.
 
 ## Future cooling and multi-room rules
 
-Cooler/Passive Cooler behavior is the next domain expansion after the first heating UI slice.
+Cooling is the next domain expansion. It must be source-backed and tested before being exposed in the UI.
 
-Ventilation and adjacent rooms remain later features and must build on explicit thermal-zone boundaries rather than hidden assumptions in UI state.
-
-## Future mod rulesets
-
-Centralized Climate Control remains a future separate ruleset. Vanilla results must not change merely to simplify mod integration.
+Ventilation and adjacent rooms remain later thermal-zone features.
 
 ## Persistence, routing and backend
 
-Persistence is deferred until the data model stabilizes.
+Persistence is deferred until the input model stabilizes.
 
-Vue Router should be introduced only for genuinely distinct URL-addressable surfaces.
+Vue Router is only added when genuinely separate URL-addressable surfaces exist.
 
 No backend is required by the current product direction.
-
-## Architecture change policy
-
-Current structure belongs in this document. Durable modeling decisions with meaningful alternatives/trade-offs require ADRs.

@@ -14,52 +14,49 @@ Status: completed.
 
 Status: completed.
 
-- Framework-independent vanilla domain core.
-- RimWorld 1.6.4850 source baseline.
-- Source-backed constants and low-level room/device primitives.
-- Deterministic domain regression tests.
-
 ## 4. Vanilla heating model
 
-Status: completed on the current work branch; awaiting owner verification/merge.
-
-- Wall and roof losses composed into room heating demand.
-- Average-power capacity model defined in ADR 0003.
-- Minimum Heater count calculation implemented.
-- Minimum Campfire capacity calculation implemented with non-thermostatic limitation.
-- Maximum average-power Heater equilibrium implemented.
-- Numeric end-to-end heating scenarios covered by tests.
+Status: completed.
 
 ## 5. First heating calculator UI
 
-Status: next.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-- Add room size, outdoor temperature and target temperature inputs.
-- Add wall-layer and roof configuration inputs supported by the current domain model.
-- Present minimum Heater/Campfire recommendations.
-- Present energy-loss/output breakdown and power margin.
-- Present unreachable and Campfire non-thermostatic warnings.
-- Add component/interaction tests.
+- Room width/height inputs.
+- Outdoor and target temperature inputs.
+- Single/double wall selection.
+- Thin/thick/open roof selection supported by the current domain model.
+- Minimum Heater and Campfire recommendations.
+- Heat-loss and required-power breakdown.
+- Heater unreachable state and Campfire non-thermostatic warnings.
+- Component/interaction regression tests.
 
 ## 6. Vanilla cooling model
 
+Status: next.
+
+- Implement Cooler efficiency/hot-side behavior.
+- Implement Passive Cooler limits.
+- Define cooling demand and minimum device count use-cases.
+- Protect the model with source-backed domain tests.
+
+## 7. Cooling calculator UI
+
 Status: planned.
 
-- Support vanilla Cooler including efficiency behavior.
-- Support Passive Cooler and its operational limits.
-- Model hot-side/cold-side constraints where required.
-- Protect calculations with regression tests against verified scenarios.
+- Add Cooler/Passive Cooler recommendations.
+- Surface hot-side assumptions and unreachable conditions.
+- Add UI interaction tests.
 
-## 7. Room coupling and ventilation
+## 8. Room coupling and ventilation
 
 Status: planned.
 
 - Support vents as heat-transfer devices rather than heat producers.
-- Define representation of adjacent rooms/thermal zones.
-- Account for doors or other coupling behavior only where it materially affects supported calculations.
-- Validate multi-room scenarios against game behavior.
+- Define adjacent thermal zones.
+- Add doors/room coupling only where source behavior is understood and tested.
 
-## 8. Extended calculator UX and persistence
+## 9. Extended calculator UX and persistence
 
 Status: planned.
 
@@ -67,21 +64,19 @@ Status: planned.
 - Add local persistence/export/import only after the rewrite data model is stable and if still useful.
 - Ensure responsive desktop/mobile behavior.
 
-## 9. Validation and vanilla release baseline
+## 10. Validation and vanilla release baseline
 
 Status: planned.
 
 - Compare representative calculator scenarios with verified in-game behavior.
-- Resolve known formula/model discrepancies.
-- Harden error/edge-state UX.
-- Finalize vanilla documentation and calculation-source notes.
+- Resolve model discrepancies.
+- Harden edge-state UX.
 - Prepare a stable vanilla-first release.
 
-## 10. Mod support
+## 11. Mod support
 
 Status: deferred until the vanilla baseline is stable.
 
 - Reintroduce Centralized Climate Control as a separate ruleset/integration.
-- Reuse generic calculator abstractions only where they genuinely fit both vanilla and mod mechanics.
-- Do not alter vanilla behavior to simplify mod support.
-- Add mod-specific tests and documentation independently from vanilla rules.
+- Keep mod calculations independently tested/documented.
+- Do not alter vanilla behavior to simplify mod integration.
