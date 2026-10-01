@@ -387,7 +387,7 @@ export function findMaximumHeaterEquilibriumTemperature({
       roomTemperature: mid,
     })
 
-    if (Math.abs(change) <= tolerance || (high - low) <= tolerance) {
+    if ((high - low) <= tolerance) {
       return Object.freeze({
         converged: true,
         temperature: mid,
