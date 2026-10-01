@@ -123,19 +123,23 @@ export function roofEqualizationTemperatureChangePerInterval({
     outdoorTemperature,
   })
 
-  const thinRoof = (
-    outdoorDifference *
-    thinRoofCoverage *
-    ROOM_EQUALIZATION.thinRoofEqualizeRate *
-    TEMPERATURE_EQUALIZATION_INTERVAL_TICKS
-  )
+  const thinRoof = thinRoofCoverage < 0.001
+    ? 0
+    : (
+      outdoorDifference *
+      thinRoofCoverage *
+      ROOM_EQUALIZATION.thinRoofEqualizeRate *
+      TEMPERATURE_EQUALIZATION_INTERVAL_TICKS
+    )
 
-  const noRoof = (
-    outdoorDifference *
-    noRoofCoverage *
-    ROOM_EQUALIZATION.noRoofEqualizeRate *
-    TEMPERATURE_EQUALIZATION_INTERVAL_TICKS
-  )
+  const noRoof = noRoofCoverage < 0.001
+    ? 0
+    : (
+      outdoorDifference *
+      noRoofCoverage *
+      ROOM_EQUALIZATION.noRoofEqualizeRate *
+      TEMPERATURE_EQUALIZATION_INTERVAL_TICKS
+    )
 
   let thickRoof = 0
 
