@@ -2,7 +2,6 @@
 import { computed, reactive } from 'vue'
 import {
   AlertTriangle,
-  Campfire,
   Flame,
   Gauge,
   House,
@@ -316,7 +315,7 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
             </div>
 
             <div class="flex size-10 items-center justify-center rounded-xl border border-border">
-              <Campfire class="size-5" aria-hidden="true" />
+              <Flame class="size-5" aria-hidden="true" />
             </div>
           </div>
 
