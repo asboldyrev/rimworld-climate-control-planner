@@ -58,33 +58,45 @@ const roofOptions = {
   },
 }
 
-const scenario = computed(() => createRectangularHeatingScenario({
-  width: Number(form.width),
-  height: Number(form.height),
-  outdoorTemperature: Number(form.outdoorTemperature),
-  targetTemperature: Number(form.targetTemperature),
-  wallLayers: Number(form.wallLayers),
-  ...roofOptions[form.roofType].values,
-}))
+const scenario = computed(() => {
+  try {
+    return createRectangularHeatingScenario({
+      width: Number(form.width),
+      height: Number(form.height),
+      outdoorTemperature: Number(form.outdoorTemperature),
+      targetTemperature: Number(form.targetTemperature),
+      wallLayers: Number(form.wallLayers),
+      ...roofOptions[form.roofType].values,
+    })
+  } catch {
+    return null
+  }
+})
 
-const demand = computed(() => heatingDemandAtTemperature({
-  scenario: scenario.value,
-  roomTemperature: scenario.value.targetTemperature,
-}))
+const demand = computed(() => scenario.value
+  ? heatingDemandAtTemperature({
+    scenario: scenario.value,
+    roomTemperature: scenario.value.targetTemperature,
+  })
+  : null)
 
-const heaterResult = computed(() => findMinimumHeaterCount({
-  scenario: scenario.value,
-}))
+const heaterResult = computed(() => scenario.value
+  ? findMinimumHeaterCount({ scenario: scenario.value })
+  : null)
 
-const campfireResult = computed(() => findMinimumCampfireCount({
-  scenario: scenario.value,
-}))
+const campfireResult = computed(() => scenario.value
+  ? findMinimumCampfireCount({ scenario: scenario.value })
+  : null)
 
-const roomArea = computed(() => scenario.value.geometry.cellCount)
+const roomArea = computed(() => scenario.value?.geometry.cellCount ?? null)
 
 const formatNumber = (value, digits = 1) => Number(value).toFixed(digits)
 
 const heaterSummary = computed(() => {
+  if (!heaterResult.value) {
+    return { primary: '—', secondary: 'Проверьте параметры помещения.' }
+  }
+
   if (!heaterResult.value.reachable) {
     return {
       primary: 'Недостижимо',
@@ -103,6 +115,10 @@ const heaterSummary = computed(() => {
 })
 
 const campfireSummary = computed(() => {
+  if (!campfireResult.value) {
+    return { primary: '—', secondary: 'Проверьте параметры помещения.' }
+  }
+
   if (!campfireResult.value.reachable) {
     return {
       primary: 'Недостижимо',
@@ -234,7 +250,10 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
       </div>
     </div>
 
-    <div class="space-y-5">
+    <div
+      v-if="scenario"
+      class="space-y-5"
+    >
       <div class="grid gap-4 sm:grid-cols-2">
         <article class="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div class="flex items-start justify-between gap-4">
@@ -379,6 +398,22 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
           </span>
         </div>
       </article>
+    </div>
+
+    <div
+      v-else
+      class="rounded-2xl border border-border bg-card p-6 shadow-sm"
+      data-testid="validation-message"
+    >
+      <div class="flex items-start gap-3">
+        <AlertTriangle class="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div>
+          <h3 class="font-semibold">Проверьте параметры</h3>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Ширина и высота должны быть целыми числами больше нуля, а температуры — корректными числами.
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 </template>
