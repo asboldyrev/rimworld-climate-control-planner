@@ -24,33 +24,29 @@ Status: completed.
 
 ## 6. Vanilla cooling model
 
-Status: completed on the current work branch; awaiting owner verification/merge.
-
-- Shared rectangular climate scenario extracted from heating-specific code.
-- Source-backed Cooler efficiency implemented.
-- Cooler hot-side temperature modeled explicitly.
-- Cooler cooling demand and minimum-count use-cases implemented.
-- Passive Cooler strict source cutoff and 17 C planning floor implemented.
-- Cooling domain regression tests added.
+Status: completed.
 
 ## 7. Cooling calculator UI
 
-Status: next.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-- Add Cooler and Passive Cooler recommendations.
-- Surface cooling demand and Cooler efficiency.
-- Surface/configure hot-side temperature assumption.
-- Show Passive Cooler 17 C limitation.
-- Add frontend interaction tests.
+- Heating/Cooling mode switch added.
+- Cooler and Passive Cooler recommendations exposed.
+- Cooling demand displayed.
+- Cooler efficiency displayed.
+- Hot-side temperature defaults to outdoors but can be configured separately.
+- Passive Cooler 17 C limitation surfaced.
+- Frontend interaction regression tests added.
 
 ## 8. Room coupling and ventilation
 
-Status: planned.
+Status: next.
 
-- Support vents as heat-transfer devices rather than heat producers.
+- Support Vent as a heat-transfer device rather than a heat producer.
 - Define adjacent thermal zones.
-- Add doors/room coupling only where source behavior is understood and tested.
-- Reuse explicit Cooler hot-side zone concepts where appropriate.
+- Model room-to-room temperature equalization.
+- Add doors/other coupling only where source behavior is understood and tested.
+- Reuse explicit Cooler hot-side thermal-zone concepts where appropriate.
 
 ## 9. Extended calculator UX and persistence
 

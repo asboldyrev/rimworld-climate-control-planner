@@ -42,15 +42,28 @@ Detailed arithmetic belongs here rather than in frontend tests.
 
 ## Frontend interaction tests
 
-`tests/frontend/App.test.js` protects the first heating calculator flow.
+`tests/frontend/App.test.js` protects both user-facing calculator modes.
 
-Current coverage verifies:
+Heating coverage verifies:
 
 - default 10x10 / -30 C / +20 C recommendation;
 - room-size changes recalculate area/device count;
 - double walls reduce required heating;
 - Heater unreachable state above its effective cutoff;
-- Campfire cutoff warning.
+- Campfire cutoff warning;
+- invalid numeric input is handled without throwing;
+- temperature inputs use whole-degree UI bounds of -273 C ... 1000 C while the domain preserves the exact -273.15 C ... 1000 C game bounds.
+
+Cooling coverage verifies:
+
+- mode switching;
+- default 10x10 / +40 C / +20 C cooling recommendation;
+- displayed Cooler efficiency;
+- outdoor temperature used as hot side by default;
+- custom hot-side temperature changes the recommendation;
+- Passive Cooler below-17 C limitation;
+- invalid numeric input is handled without throwing;
+- custom Cooler hot-side UI input uses the whole-degree -273 C ... 1000 C range; domain tests protect the exact -273.15 C ... 1000 C bounds.
 
 Frontend tests should assert user-visible behavior and representative results. They should not duplicate every domain numerical test.
 

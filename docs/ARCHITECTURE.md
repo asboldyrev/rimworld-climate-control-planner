@@ -111,11 +111,53 @@ Cooling is now implemented as a framework-independent domain layer.
 
 Cooler hot-side temperature is explicitly modeled and defaults to outdoor temperature only when the caller does not provide another value.
 
+## User-facing calculator modes
+
+`App.vue` now owns only the active calculator mode:
+
+- heating;
+- cooling.
+
+Each mode remains a separate Vue component with local form state:
+
+```text
+App.vue
+├── HeatingCalculator.vue
+└── CoolingCalculator.vue
+```
+
+This keeps the already-verified heating flow isolated while allowing the cooling form to expose cooling-specific inputs such as Cooler hot-side temperature.
+
+No Pinia store is introduced because state is still local to the currently mounted calculator surface.
+
+## Cooling UI boundary
+
+`CoolingCalculator.vue` may:
+
+- normalize cooling form values;
+- select whether Cooler hot side equals outdoors or uses a custom temperature;
+- construct a supported cooling scenario;
+- invoke domain cooling use-cases;
+- format results for display.
+
+It must not duplicate Cooler efficiency, cooling-demand or Passive Cooler cutoff arithmetic.
+
+The UI exposes:
+
+- room dimensions;
+- outdoor and target temperatures;
+- single/double walls;
+- supported roof types;
+- Cooler hot-side assumption/custom value;
+- required cooling heat/s;
+- Cooler count/efficiency/power margin;
+- Passive Cooler recommendation and 17 C warning.
+
 ## Future multi-room rules
 
-Ventilation and adjacent rooms remain later thermal-zone features.
+Ventilation and adjacent rooms are the next thermal-zone features.
 
-The explicit Cooler hot-side temperature boundary is intended to evolve into a real neighboring thermal zone rather than being hidden inside Cooler-specific UI state.
+The explicit Cooler hot-side temperature boundary should evolve into a real neighboring thermal zone rather than being hidden inside Cooler-specific UI state.
 
 ## Persistence, routing and backend
 

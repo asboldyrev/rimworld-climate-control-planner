@@ -123,6 +123,24 @@ describe('vanilla rectangular-room cooling model', () => {
     expect(result.requiredCount).toBe(2)
   })
 
+  it('rejects Cooler hot-side temperatures outside the global RimWorld bounds', () => {
+    expect(() => createRectangularCoolingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: 40,
+      hotSideTemperature: 1000.01,
+      targetTemperature: 20,
+    })).toThrow(RangeError)
+
+    expect(() => createRectangularCoolingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: 40,
+      hotSideTemperature: -273.16,
+      targetTemperature: 20,
+    })).toThrow(RangeError)
+  })
+
   it('rejects Passive Cooler targets below 17 C', () => {
     const scenario = createRectangularCoolingScenario({
       width: 10,

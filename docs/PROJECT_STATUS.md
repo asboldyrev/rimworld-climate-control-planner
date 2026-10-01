@@ -4,53 +4,54 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-The vanilla cooling domain model is implemented on the current work branch and is ready for owner verification.
+The first user-facing vanilla cooling calculator UI is implemented on the current work branch and is ready for owner verification.
 
-The first heating calculator UI is now part of the accepted `dev` baseline.
+Heating and cooling domain models are both part of the accepted `dev` baseline.
 
 ## Current accepted baseline
 
 The application now includes:
 
-- working user-facing vanilla heating calculator;
-- framework-independent shared rectangular climate scenario;
-- source-backed Heater, Campfire, Cooler and Passive Cooler primitives;
-- heating-capacity use-cases;
-- cooling-demand and minimum Cooler/Passive Cooler use-cases;
-- explicit hot-side temperature modeling for Cooler;
-- source-backed Cooler efficiency including the 40 C hot-side penalty floor;
-- Passive Cooler 17 C lower-limit planning behavior;
-- domain regression tests for both heating and cooling.
+- working vanilla heating calculator UI;
+- working vanilla cooling calculator UI;
+- mode switch between heating and cooling;
+- source-backed Heater, Campfire, Cooler and Passive Cooler domain models;
+- shared rectangular-room climate geometry/environment model;
+- explicit Cooler hot-side temperature handling;
+- user-visible Cooler efficiency and cooling-demand breakdown;
+- Passive Cooler 17 C limitation and non-thermostatic warning;
+- frontend interaction tests covering both calculator modes.
 
-Cooling is not yet exposed in the Vue UI.
+The current user-facing model still assumes an isolated rectangular room without doors, adjacent thermal zones or vents.
 
-## Verified cooling reference scenarios
+## Cooling UI reference scenario
 
-For a 10x10 room with single walls, ordinary roof and 40 C outdoors:
+Default cooling inputs:
 
-At a 20 C target:
+- room: 10x10;
+- outdoors: +40 C;
+- target: +20 C;
+- single walls;
+- ordinary thin roof;
+- Cooler hot side: outdoors (+40 C).
 
-- cooling demand: about 14.16 heat/s removed;
-- Cooler hot side defaults to 40 C;
-- Cooler efficiency: about 84.62%;
-- minimum Cooler count: 1.
+Displayed result:
 
-At a -10 C freezer target with the same 40 C hot side:
+- 100 room cells;
+- approximately 14.16 heat/s must be removed;
+- Cooler efficiency: about 84.6%;
+- 1 Cooler;
+- 2 Passive Coolers.
 
-- minimum Cooler count: 3.
-
-At a 17 C Passive Cooler target:
-
-- two Passive Coolers are required by the current average-capacity model;
-- targets below 17 C are unreachable.
+The user can decouple the Cooler hot side from outdoor temperature and enter a custom hot-side temperature.
 
 ## Immediate next work
 
-1. Build the user-facing cooling calculator UI.
-2. Expose Cooler and Passive Cooler recommendations alongside the existing room inputs.
-3. Make the Cooler hot-side assumption visible and allow it to diverge from outdoors when appropriate.
-4. Add frontend interaction tests for cooling.
-5. After the cooling slice is usable, start room coupling / ventilation.
+1. Verify the cooling UI manually at desktop/mobile widths.
+2. Start the room-coupling / ventilation domain model.
+3. Define adjacent thermal zones and Vent equalization behavior.
+4. Reuse the existing explicit Cooler hot-side concept where room-to-room exhaust is modeled.
+5. Add user-facing room-coupling inputs only after the domain model is source-backed and tested.
 
 ## Known blockers
 

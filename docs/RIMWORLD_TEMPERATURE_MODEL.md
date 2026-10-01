@@ -381,3 +381,33 @@ For device-count planning, 17 C is treated as the **lower controllable temperatu
 This follows ADR 0003's average-power approach and should not be interpreted as a claim that Passive Cooler continuously runs at exactly 17.000 C.
 
 The result remains non-thermostatic and should be presented as holding the room near the cutoff rather than regulating an exact setpoint.
+
+
+## Global temperature bounds
+
+RimWorld's room temperature storage clamps values to:
+
+```text
+minimum = -273.15 C
+maximum = 1000 C
+```
+
+This is implemented by `RoomTempTracker.Temperature`.
+
+The player-facing `CompTempControl.InterfaceChangeTargetTemperature()` used by temperature-control buildings also clamps configured target temperature to the same range.
+
+`CompProperties_TempControl` contains `minTargetTemperature = -50` and `maxTargetTemperature = 50`, but those values are not used by the current 1.6 temperature-control interface code as actual target limits. The calculator therefore does not use them as validation bounds.
+
+### Calculator input policy
+
+The framework-independent domain preserves RimWorld's exact source-backed range of -273.15 C ... 1000 C.
+
+The user-facing calculator intentionally uses whole-degree inputs with `step=1` and a UI range of **-273 C ... 1000 C** for:
+
+- outdoor temperature;
+- heating/cooling target temperature;
+- Cooler hot-side temperature.
+
+The UI minimum is rounded inward from RimWorld's -273.15 C lower bound so browser number inputs keep a natural integer step grid (for example 9, 10, 11 rather than 9.85, 10.85, 11.85).
+
+This is a UX restriction only. Domain APIs continue to accept valid fractional temperatures down to -273.15 C and reject values outside the exact game range.
