@@ -12,7 +12,10 @@ import {
   roofEqualizationTemperatureChangePerInterval,
   wallEqualizationTemperatureChangePerInterval,
 } from './room'
-import { createRectangularClimateScenario } from './scenario'
+import {
+  assertTemperatureWithinLimits,
+  createRectangularClimateScenario,
+} from './scenario'
 
 const EQUALIZATION_INTERVAL_SECONDS = (
   TEMPERATURE_EQUALIZATION_INTERVAL_TICKS / RIMWORLD_TICKS_PER_SECOND
@@ -37,7 +40,7 @@ export function createRectangularCoolingScenario({
   const base = createRectangularClimateScenario(scenario)
 
   const resolvedHotSideTemperature = hotSideTemperature ?? base.outdoorTemperature
-  assertFiniteNumber(resolvedHotSideTemperature, 'hotSideTemperature')
+  assertTemperatureWithinLimits(resolvedHotSideTemperature, 'hotSideTemperature')
 
   return Object.freeze({
     ...base,
