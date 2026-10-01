@@ -5,11 +5,11 @@ import {
 } from './constants'
 import { heaterEfficiencyAtTemperature } from './devices'
 import {
-  createRectangularRoomGeometry,
   outdoorWallSampleTemperatureDelta,
   roofEqualizationTemperatureChangePerInterval,
   wallEqualizationTemperatureChangePerInterval,
 } from './room'
+import { createRectangularClimateScenario } from './scenario'
 
 const EQUALIZATION_INTERVAL_SECONDS = (
   TEMPERATURE_EQUALIZATION_INTERVAL_TICKS / RIMWORLD_TICKS_PER_SECOND
@@ -27,36 +27,9 @@ function assertNonNegativeInteger(value, name) {
   }
 }
 
-export function createRectangularHeatingScenario({
-  width,
-  height,
-  outdoorTemperature,
-  targetTemperature,
-  wallLayers = 1,
-  thinRoofCoverage = 1,
-  noRoofCoverage = 0,
-  thickRoofCoverage = 0,
-  undergroundMap = false,
-}) {
-  const geometry = createRectangularRoomGeometry({ width, height })
-
-  assertFiniteNumber(outdoorTemperature, 'outdoorTemperature')
-  assertFiniteNumber(targetTemperature, 'targetTemperature')
-
-  return Object.freeze({
-    geometry,
-    outdoorTemperature,
-    targetTemperature,
-    wallLayers,
-    roof: Object.freeze({
-      thinRoofCoverage,
-      noRoofCoverage,
-      thickRoofCoverage,
-      undergroundMap,
-    }),
-  })
+export function createRectangularHeatingScenario(scenario) {
+  return createRectangularClimateScenario(scenario)
 }
-
 export function roomNaturalTemperatureChangePerInterval({
   scenario,
   roomTemperature,
