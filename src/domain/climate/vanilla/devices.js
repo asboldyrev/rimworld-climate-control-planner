@@ -71,3 +71,69 @@ export function campfireTemperatureChangePerSecond({
 
   return heatPerSecond / roomCellCount
 }
+
+
+export function coolerEfficiency({
+  coldSideTemperature,
+  hotSideTemperature,
+}) {
+  assertFiniteNumber(coldSideTemperature, 'coldSideTemperature')
+  assertFiniteNumber(hotSideTemperature, 'hotSideTemperature')
+
+  const temperatureDifference = hotSideTemperature - coldSideTemperature
+  const hotSidePenaltyFloor = hotSideTemperature - 40
+  const effectiveDifference = Math.max(
+    temperatureDifference,
+    hotSidePenaltyFloor,
+  )
+
+  return Math.max(
+    0,
+    1 - effectiveDifference * VANILLA_DEVICES.cooler.efficiencyLossPerDegreeDifference,
+  )
+}
+
+export function coolerTemperatureChangePerRareTick({
+  roomTemperature,
+  targetTemperature,
+  roomCellCount,
+  hotSideTemperature,
+}) {
+  const efficiency = coolerEfficiency({
+    coldSideTemperature: roomTemperature,
+    hotSideTemperature,
+  })
+
+  const energyLimit = (
+    VANILLA_DEVICES.cooler.heatPerSecond *
+    efficiency *
+    TICK_RARE_SECONDS
+  )
+
+  return controlTemperatureChange({
+    roomTemperature,
+    targetTemperature,
+    roomCellCount,
+    energyLimit,
+  })
+}
+
+export function passiveCoolerIsActive(roomTemperature) {
+  assertFiniteNumber(roomTemperature, 'roomTemperature')
+
+  return roomTemperature > VANILLA_DEVICES.passiveCooler.minimumTemperature
+}
+
+export function passiveCoolerTemperatureChangePerSecond({
+  roomTemperature,
+  roomCellCount,
+}) {
+  assertFiniteNumber(roomTemperature, 'roomTemperature')
+  assertPositiveInteger(roomCellCount, 'roomCellCount')
+
+  if (!passiveCoolerIsActive(roomTemperature)) {
+    return 0
+  }
+
+  return VANILLA_DEVICES.passiveCooler.heatPerSecond / roomCellCount
+}

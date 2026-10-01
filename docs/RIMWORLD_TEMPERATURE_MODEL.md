@@ -266,3 +266,118 @@ Campfire is not thermostat-controlled. The planner must therefore distinguish:
 - precise thermostat regulation, which Campfire cannot provide.
 
 Targets at or above the heat-push cutoff are not reported as directly sustainable by the average-capacity model. Discrete in-game heat pulses can temporarily overshoot 28 C, but that is not stable controlled heating.
+
+
+## Cooler
+
+Cooler behavior is implemented from `Building_Cooler.TickRare()`.
+
+The cold-side energy value is:
+
+```text
+base energy per second = -21
+```
+
+Efficiency depends on the cold-side and hot-side temperatures.
+
+The source computes:
+
+```text
+difference = hotSide - coldSide
+penaltyFloor = hotSide - 40
+effectiveDifference = max(difference, penaltyFloor)
+
+efficiency = max(0, 1 - effectiveDifference / 130)
+```
+
+There is **no upper clamp at 1** in the game code. If the hot side is substantially colder than the cold side, Cooler efficiency can therefore exceed 100%.
+
+The planner preserves this behavior.
+
+### Hot-side temperature
+
+The cold room's outdoor temperature and the Cooler's hot-side temperature are different domain concepts.
+
+For a normal Cooler mounted in an exterior wall and venting directly outside, the cooling scenario defaults:
+
+```text
+hotSideTemperature = outdoorTemperature
+```
+
+The domain API allows a different hot-side temperature so future room-to-room exhaust layouts can be modeled without changing the Cooler formula.
+
+### Hot-side heat output
+
+When Cooler is actively cooling, the source pushes heat to the hot side using:
+
+```text
+hot-side heat = available cooling energy * 1.25
+```
+
+This is based on the Cooler's available TickRare energy when active, not on a separate conservation-of-energy reconstruction.
+
+The current capacity model exposes the corresponding average hot-side heat rate for later multi-room work.
+
+## Rectangular-room cooling capacity
+
+`cooling.js` uses the same rectangular room geometry and natural wall/roof exchange model as heating.
+
+At a requested cold-room temperature:
+
+1. compute natural wall/roof energy change;
+2. if natural change is positive, that energy must be removed;
+3. compute source-backed Cooler efficiency using the requested cold-side temperature and hot-side temperature;
+4. compare required removal with average device removal over the same 120-tick planning interval.
+
+### Reference room example
+
+For a 10x10 room with one wall layer, full thin roof, 40 C outdoors and a 20 C target:
+
+```text
+natural temperature gain = +0.2832 C / 120 ticks
+energy gain              = +28.32 / interval
+cooling demand           = 14.16 / second
+```
+
+With a 40 C hot side and 20 C cold side:
+
+```text
+Cooler efficiency = 1 - 20/130
+                  = 0.846153...
+effective cooling = 17.7692... / second
+```
+
+One Cooler therefore has enough average capacity for this scenario.
+
+For a -10 C freezer with a 40 C hot side, the same room requires three Coolers in the current rectangular-room model.
+
+## Passive Cooler
+
+Passive Cooler uses `CompHeatPusherPowered` / `CompHeatPusher`.
+
+Verified definition values:
+
+```text
+heatPerSecond = -11
+heatPushMinTemperature = 17
+```
+
+The source uses a strict activation condition:
+
+```text
+ambientTemperature > 17 C
+```
+
+so no new cooling pulse begins at exactly 17 C. The RimWorld Wiki likewise describes 17 C as its minimum cooling temperature. cite placeholder not stored in repository docs; source-backed value verified during implementation.
+
+### Planning interpretation at 17 C
+
+For device-count planning, 17 C is treated as the **lower controllable temperature band**:
+
+- target < 17 C: unreachable by Passive Cooler;
+- target = 17 C: capacity is evaluated as cycling immediately above the cutoff;
+- target > 17 C: full -11 heat/s capacity is available while cooling is needed.
+
+This follows ADR 0003's average-power approach and should not be interpreted as a claim that Passive Cooler continuously runs at exactly 17.000 C.
+
+The result remains non-thermostatic and should be presented as holding the room near the cutoff rather than regulating an exact setpoint.

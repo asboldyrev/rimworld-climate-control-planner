@@ -95,11 +95,27 @@ Frontend tests verify that changing UI inputs changes visible results according 
 
 They do not reproduce domain arithmetic inside the test suite; detailed numerical mechanics remain covered by `tests/domain/`.
 
-## Future cooling and multi-room rules
+## Cooling domain
 
-Cooling is the next domain expansion. It must be source-backed and tested before being exposed in the UI.
+Cooling is now implemented as a framework-independent domain layer.
+
+`src/domain/climate/vanilla/cooling.js` provides:
+
+- natural cooling-load calculation for the supported rectangular room model;
+- source-backed Cooler capacity at a cold-side/hot-side temperature pair;
+- minimum Cooler count;
+- Passive Cooler average-capacity planning;
+- minimum Passive Cooler count and 17 C lower-limit reporting.
+
+`scenario.js` now owns the shared rectangular climate scenario used by heating and cooling. `createRectangularHeatingScenario()` remains as a compatibility wrapper for the existing UI/domain call sites.
+
+Cooler hot-side temperature is explicitly modeled and defaults to outdoor temperature only when the caller does not provide another value.
+
+## Future multi-room rules
 
 Ventilation and adjacent rooms remain later thermal-zone features.
+
+The explicit Cooler hot-side temperature boundary is intended to evolve into a real neighboring thermal zone rather than being hidden inside Cooler-specific UI state.
 
 ## Persistence, routing and backend
 

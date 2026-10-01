@@ -26,6 +26,18 @@ Pure domain tests live under `tests/domain/` and must not require Vue mounting o
 
 They protect source-backed mechanics, numerical boundaries and composed heating/cooling use-cases.
 
+Current cooling-domain coverage includes:
+
+- exact Cooler efficiency formula;
+- hot-side 40 C penalty floor;
+- zero-only efficiency clamp;
+- Cooler TickRare cooling primitive;
+- Passive Cooler strict >17 C activation;
+- 10x10 hot-room cooling demand;
+- minimum Cooler count for room-temperature and freezer scenarios;
+- separate hot-side temperature effects;
+- Passive Cooler 17 C planning floor and below-limit rejection.
+
 Detailed arithmetic belongs here rather than in frontend tests.
 
 ## Frontend interaction tests
