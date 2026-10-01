@@ -114,8 +114,7 @@ describe('vanilla rectangular-room heating model', () => {
     })
 
     expect(result.converged).toBe(true)
-    expect(result.temperature).toBeGreaterThan(0)
-    expect(result.temperature).toBeLessThan(20)
+    expect(result.temperature).toBeCloseTo(-0.339, 2)
   })
 
   it('treats campfire as non-thermostatic and refuses targets at its cutoff', () => {
