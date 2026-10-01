@@ -52,7 +52,7 @@ Heating coverage verifies:
 - Heater unreachable state above its effective cutoff;
 - Campfire cutoff warning;
 - invalid numeric input is handled without throwing;
-- temperature inputs expose and enforce the -273.15 C ... 1000 C RimWorld bounds.
+- temperature inputs use whole-degree UI bounds of -273 C ... 1000 C while the domain preserves the exact -273.15 C ... 1000 C game bounds.
 
 Cooling coverage verifies:
 
@@ -63,7 +63,7 @@ Cooling coverage verifies:
 - custom hot-side temperature changes the recommendation;
 - Passive Cooler below-17 C limitation;
 - invalid numeric input is handled without throwing;
-- custom Cooler hot-side temperatures outside -273.15 C ... 1000 C are rejected.
+- custom Cooler hot-side UI input uses the whole-degree -273 C ... 1000 C range; domain tests protect the exact -273.15 C ... 1000 C bounds.
 
 Frontend tests should assert user-visible behavior and representative results. They should not duplicate every domain numerical test.
 
