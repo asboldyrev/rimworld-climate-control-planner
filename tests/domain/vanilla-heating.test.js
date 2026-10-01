@@ -117,6 +117,29 @@ describe('vanilla rectangular-room heating model', () => {
     expect(result.temperature).toBeCloseTo(-0.339, 2)
   })
 
+  it('accepts the global RimWorld temperature bounds and rejects values outside them', () => {
+    expect(() => createRectangularHeatingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: -273.15,
+      targetTemperature: 1000,
+    })).not.toThrow()
+
+    expect(() => createRectangularHeatingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: -273.16,
+      targetTemperature: 20,
+    })).toThrow(RangeError)
+
+    expect(() => createRectangularHeatingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: -30,
+      targetTemperature: 1000.01,
+    })).toThrow(RangeError)
+  })
+
   it('treats campfire as non-thermostatic and refuses targets at its cutoff', () => {
     const campfireTarget = createRectangularHeatingScenario({
       width: 10,
