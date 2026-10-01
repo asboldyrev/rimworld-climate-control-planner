@@ -20,33 +20,28 @@ Status: completed.
 
 ## 5. First heating calculator UI
 
-Status: completed on the current work branch; awaiting owner verification/merge.
-
-- Room width/height inputs.
-- Outdoor and target temperature inputs.
-- Single/double wall selection.
-- Thin/thick/open roof selection supported by the current domain model.
-- Minimum Heater and Campfire recommendations.
-- Heat-loss and required-power breakdown.
-- Heater unreachable state and Campfire non-thermostatic warnings.
-- Component/interaction regression tests.
+Status: completed.
 
 ## 6. Vanilla cooling model
 
-Status: next.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-- Implement Cooler efficiency/hot-side behavior.
-- Implement Passive Cooler limits.
-- Define cooling demand and minimum device count use-cases.
-- Protect the model with source-backed domain tests.
+- Shared rectangular climate scenario extracted from heating-specific code.
+- Source-backed Cooler efficiency implemented.
+- Cooler hot-side temperature modeled explicitly.
+- Cooler cooling demand and minimum-count use-cases implemented.
+- Passive Cooler strict source cutoff and 17 C planning floor implemented.
+- Cooling domain regression tests added.
 
 ## 7. Cooling calculator UI
 
-Status: planned.
+Status: next.
 
-- Add Cooler/Passive Cooler recommendations.
-- Surface hot-side assumptions and unreachable conditions.
-- Add UI interaction tests.
+- Add Cooler and Passive Cooler recommendations.
+- Surface cooling demand and Cooler efficiency.
+- Surface/configure hot-side temperature assumption.
+- Show Passive Cooler 17 C limitation.
+- Add frontend interaction tests.
 
 ## 8. Room coupling and ventilation
 
@@ -55,6 +50,7 @@ Status: planned.
 - Support vents as heat-transfer devices rather than heat producers.
 - Define adjacent thermal zones.
 - Add doors/room coupling only where source behavior is understood and tested.
+- Reuse explicit Cooler hot-side zone concepts where appropriate.
 
 ## 9. Extended calculator UX and persistence
 
