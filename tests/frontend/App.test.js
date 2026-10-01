@@ -67,12 +67,12 @@ describe('climate calculator UI', () => {
     const wrapper = mount(App)
 
     const input = wrapper.get('[data-testid="outdoor-input"]')
-    expect(input.attributes('min')).toBe('-273.15')
+    expect(input.attributes('min')).toBe('-273')
     expect(input.attributes('max')).toBe('1000')
 
-    await input.setValue('1000.01')
+    await input.setValue('1001')
 
-    expect(wrapper.get('[data-testid="validation-message"]').text()).toContain('−273.15 до 1000 °C')
+    expect(wrapper.get('[data-testid="validation-message"]').text()).toContain('−273 до 1000 °C')
   })
 
   it('switches to cooling and renders the reference recommendation', async () => {
@@ -126,12 +126,12 @@ describe('climate calculator UI', () => {
     await wrapper.get('[data-testid="hot-side-outdoor-checkbox"]').setValue(false)
 
     const input = wrapper.get('[data-testid="hot-side-input"]')
-    expect(input.attributes('min')).toBe('-273.15')
+    expect(input.attributes('min')).toBe('-273')
     expect(input.attributes('max')).toBe('1000')
 
-    await input.setValue('-273.16')
+    await input.setValue('-274')
 
-    expect(wrapper.get('[data-testid="cooling-validation-message"]').text()).toContain('−273.15 до 1000 °C')
+    expect(wrapper.get('[data-testid="cooling-validation-message"]').text()).toContain('−273 до 1000 °C')
   })
 
   it('shows validation instead of throwing while a cooling field is invalid', async () => {
