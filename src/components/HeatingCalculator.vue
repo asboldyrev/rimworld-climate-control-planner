@@ -16,7 +16,6 @@ import {
   findMinimumCampfireCount,
   findMinimumHeaterCount,
   heatingDemandAtTemperature,
-  ROOM_TEMPERATURE_LIMITS,
 } from '@/domain/climate/vanilla'
 
 const form = reactive({
@@ -186,8 +185,8 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
             v-model.number="form.outdoorTemperature"
             data-testid="outdoor-input"
             type="number"
-            :min="ROOM_TEMPERATURE_LIMITS.min"
-            :max="ROOM_TEMPERATURE_LIMITS.max"
+            min="-273"
+            max="1000"
             step="1"
             class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:ring-2 focus:ring-ring"
           >
@@ -199,8 +198,8 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
             v-model.number="form.targetTemperature"
             data-testid="target-input"
             type="number"
-            :min="ROOM_TEMPERATURE_LIMITS.min"
-            :max="ROOM_TEMPERATURE_LIMITS.max"
+            min="-273"
+            max="1000"
             step="1"
             class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:ring-2 focus:ring-ring"
           >
@@ -414,7 +413,7 @@ const roofLabel = computed(() => roofOptions[form.roofType].label)
         <div>
           <h3 class="font-semibold">Проверьте параметры</h3>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Ширина и высота должны быть целыми числами больше нуля, а температуры — в диапазоне от −273.15 до 1000 °C.
+            Ширина и высота должны быть целыми числами больше нуля, а температуры — целыми значениями от −273 до 1000 °C.
           </p>
         </div>
       </div>
