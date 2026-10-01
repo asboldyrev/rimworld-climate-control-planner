@@ -1,8 +1,18 @@
+import { ROOM_TEMPERATURE_LIMITS } from './constants'
 import { createRectangularRoomGeometry } from './room'
 
-function assertFiniteNumber(value, name) {
+export function assertTemperatureWithinLimits(value, name) {
   if (!Number.isFinite(value)) {
     throw new TypeError(`${name} must be a finite number`)
+  }
+
+  if (
+    value < ROOM_TEMPERATURE_LIMITS.min ||
+    value > ROOM_TEMPERATURE_LIMITS.max
+  ) {
+    throw new RangeError(
+      `${name} must be between ${ROOM_TEMPERATURE_LIMITS.min} and ${ROOM_TEMPERATURE_LIMITS.max} C`,
+    )
   }
 }
 
@@ -19,8 +29,8 @@ export function createRectangularClimateScenario({
 }) {
   const geometry = createRectangularRoomGeometry({ width, height })
 
-  assertFiniteNumber(outdoorTemperature, 'outdoorTemperature')
-  assertFiniteNumber(targetTemperature, 'targetTemperature')
+  assertTemperatureWithinLimits(outdoorTemperature, 'outdoorTemperature')
+  assertTemperatureWithinLimits(targetTemperature, 'targetTemperature')
 
   return Object.freeze({
     geometry,
