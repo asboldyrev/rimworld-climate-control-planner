@@ -184,3 +184,85 @@ The current core implements source-faithful low-level primitives plus the first 
 It does **not** yet claim to reproduce every possible RimWorld room shape, doorway, neighboring room, mountain layout or region-grid edge case.
 
 Those cases should be added as explicit domain features and source-backed tests instead of silently extending the simple rectangular model.
+
+
+## Capacity-planning time model
+
+Natural room equalization runs when `TicksGame % 120 == 7`.
+
+Rare-tick temperature devices run on a 250-tick cadence with object hash scheduling. A planner knows device count but not the future in-game Thing IDs/hash phases, so exact pulse timing cannot be determined from normal calculator inputs.
+
+ADR 0003 therefore defines an average-power model for capacity planning:
+
+```text
+natural interval = 120 ticks = 2 seconds
+device energy per interval = effective heat/s * 2 seconds
+```
+
+Temperature-dependent efficiency and cutoffs are evaluated at the temperature being tested.
+
+This does not replace low-level pulse behavior; it provides a deterministic capacity model for device-count planning.
+
+## Rectangular-room heating capacity
+
+`heating.js` composes the source-backed room primitives into a simple isolated rectangular-room model.
+
+At a requested temperature:
+
+1. compute wall exchange;
+2. compute roof exchange;
+3. convert total natural temperature change back to room energy using cell count;
+4. if natural exchange is a loss, that absolute energy is the heating demand;
+5. compare demand with the average effective device energy over the same 120 ticks.
+
+### Example
+
+For a 10x10 room with one wall layer, full thin roof, -30 C outdoors and a 20 C target:
+
+```text
+wall change = -0.408 C / interval
+roof change = -0.300 C / interval
+total       = -0.708 C / interval
+
+room cells = 100
+energy demand = 70.8 per interval
+heat demand   = 35.4 per second
+```
+
+At 20 C a Heater still has 100% efficiency:
+
+```text
+one Heater = 21 heat/s
+           = 42 energy / 120-tick interval
+```
+
+Therefore one Heater is insufficient and two provide enough average capacity.
+
+The model returns the required count together with the energy margin so UI can explain the recommendation.
+
+## Heater equilibrium
+
+The model can also calculate the maximum average-power equilibrium for a fixed Heater count, assuming the thermostat is set high enough not to be the limiting factor.
+
+This is solved numerically from:
+
+```text
+natural room temperature change
++ average Heater temperature change
+= 0
+```
+
+For the 10x10 / -30 C example above, one Heater equilibrates at approximately -0.339 C.
+
+This is a capacity equilibrium, not a prediction of exact tick-to-tick temperature ripple.
+
+## Campfire planning
+
+Campfire uses the same average-energy comparison only while the room is below its 28 C heat-push cutoff.
+
+Campfire is not thermostat-controlled. The planner must therefore distinguish:
+
+- enough average power to reach/sustain a lower target band;
+- precise thermostat regulation, which Campfire cannot provide.
+
+Targets at or above the heat-push cutoff are not reported as directly sustainable by the average-capacity model. Discrete in-game heat pulses can temporarily overshoot 28 C, but that is not stable controlled heating.
