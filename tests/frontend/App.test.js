@@ -63,6 +63,18 @@ describe('climate calculator UI', () => {
     expect(wrapper.get('[data-testid="validation-message"]').text()).toContain('Проверьте параметры')
   })
 
+  it('shows validation when heating temperature exceeds the RimWorld bounds', async () => {
+    const wrapper = mount(App)
+
+    const input = wrapper.get('[data-testid="outdoor-input"]')
+    expect(input.attributes('min')).toBe('-273.15')
+    expect(input.attributes('max')).toBe('1000')
+
+    await input.setValue('1000.01')
+
+    expect(wrapper.get('[data-testid="validation-message"]').text()).toContain('−273.15 до 1000 °C')
+  })
+
   it('switches to cooling and renders the reference recommendation', async () => {
     const wrapper = mount(App)
 
@@ -105,6 +117,21 @@ describe('climate calculator UI', () => {
 
     expect(wrapper.get('[data-testid="passive-cooler-count"]').text()).toBe('Недостижимо')
     expect(wrapper.text()).toContain('не может удерживать температуру ниже 17 °C')
+  })
+
+  it('shows validation when custom Cooler hot-side temperature exceeds RimWorld bounds', async () => {
+    const wrapper = mount(App)
+
+    await wrapper.get('[data-testid="cooling-mode"]').trigger('click')
+    await wrapper.get('[data-testid="hot-side-outdoor-checkbox"]').setValue(false)
+
+    const input = wrapper.get('[data-testid="hot-side-input"]')
+    expect(input.attributes('min')).toBe('-273.15')
+    expect(input.attributes('max')).toBe('1000')
+
+    await input.setValue('-273.16')
+
+    expect(wrapper.get('[data-testid="cooling-validation-message"]').text()).toContain('−273.15 до 1000 °C')
   })
 
   it('shows validation instead of throwing while a cooling field is invalid', async () => {
