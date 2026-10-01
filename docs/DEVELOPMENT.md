@@ -16,13 +16,23 @@ Start local development with:
 npm run dev
 ```
 
+Run automated tests with:
+
+```bash
+npm test
+```
+
+Use watch mode during implementation with:
+
+```bash
+npm run test:watch
+```
+
 Build the production bundle with:
 
 ```bash
 npm run build
 ```
-
-Additional test/lint/type-check commands must be documented here when introduced.
 
 ## Working branch
 
@@ -53,20 +63,34 @@ Prefer deleting/replacing stale mod-specific assumptions over wrapping them in n
 
 ## Frontend conventions
 
-Target frontend stack:
+Current frontend stack:
 
 - Vue;
 - Pinia;
-- Tailwind CSS;
-- shadcn-vue;
+- Tailwind CSS v4;
+- shadcn-vue-compatible local UI components;
 - `@lucide/vue`;
-- Vue Router when needed.
+- Vitest + Vue Test Utils for tests.
+
+Vue Router should only be added when route-level separation is useful.
 
 Prefer shadcn-vue primitives/components for supported UI controls before creating parallel bespoke component systems.
 
-Use Lucide icons through `@lucide/vue`; avoid introducing a second general-purpose icon set without a concrete need.
+Use Lucide icons through `@lucide/vue`; do not introduce another general-purpose icon set without a concrete need.
 
 Keep domain calculations out of Vue SFC templates and component event handlers.
+
+## Adding shadcn-vue components
+
+The repository contains `components.json` and the standard aliases required by shadcn-vue.
+
+When the CLI is available locally, components can be added with:
+
+```bash
+npx shadcn-vue@latest add <component>
+```
+
+Review generated files before commit and keep only components that are actually used.
 
 ## Calculation implementation
 
@@ -85,12 +109,9 @@ When approximation is necessary, make the approximation explicit in code/docs/re
 
 Do not retain a legacy dependency merely because the old application used it.
 
-During the rewrite:
+Bulma and Remix Icon were removed with the frontend rewrite foundation.
 
-- remove Bulma once Tailwind/shadcn-vue replaces all remaining usage;
-- remove Remix Icon once Lucide replaces all remaining usage;
-- add Vue Router only if needed;
-- avoid large utility libraries for logic that is small, stable and easier to own directly.
+Avoid large utility libraries for logic that is small, stable and easier to own directly.
 
 ## Documentation check
 

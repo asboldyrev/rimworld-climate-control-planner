@@ -1,10 +1,9 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import App from './App.vue'
-import 'remixicon/fonts/remixicon.css'
-import 'bulma/css/bulma.min.css'
-import '@/assets/dark-theme.css'
+import { createApp } from 'vue'
 
-const app = createApp(App)
-app.use(createPinia())
-app.mount('#app')
+import App from './App.vue'
+import './style.css'
+
+createApp(App)
+  .use(createPinia())
+  .mount('#app')

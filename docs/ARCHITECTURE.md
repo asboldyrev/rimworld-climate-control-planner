@@ -1,64 +1,64 @@
 # RimWorld Climate Control Planner architecture
 
-This document describes the architecture that exists now and the accepted rewrite direction. Planned changes are explicitly marked as target/future and must not be presented as already implemented.
+This document describes the architecture that exists now. Planned changes must be explicitly marked as future/considered and should not be presented as implemented.
 
-## Current repository shape
+## Current shape
 
-The repository currently contains a legacy Vite + Vue application created for the Centralized Climate Control mod.
+The legacy Centralized Climate Control application surface has been removed from the rewrite branch.
 
-Current code includes Vue components, Pinia stores, composables and constants. The current package manifest still includes Bulma and Remix Icon.
-
-This legacy structure is reference material during the rewrite, not an architectural compatibility requirement.
-
-## Accepted target shape
-
-The rewrite should separate UI/state concerns from RimWorld calculation rules.
+The current frontend foundation is:
 
 ```text
-Vue UI / shadcn-vue components
+Vue UI / shadcn-vue-compatible local components
               |
               v
       application state
           (Pinia)
               |
               v
-     calculator use-cases
+     future calculator use-cases
               |
               v
-    vanilla calculation core
-       / rules / constants
-              |
-              v
-     deterministic results
+    future vanilla calculation core
 ```
 
-The calculation core must not depend on Vue, Pinia, browser storage or component state.
+The calculation core is the next roadmap stage and does not exist yet.
 
 ## Frontend
 
-Target frontend technologies:
+Current frontend technologies:
 
 - Vue;
 - Vite;
-- Tailwind CSS;
-- shadcn-vue;
+- Pinia;
+- Tailwind CSS v4 through `@tailwindcss/vite`;
+- shadcn-vue project configuration and local component structure;
 - `@lucide/vue`;
-- Pinia for shared state;
-- Vue Router only if route-level application structure becomes useful.
+- Vitest/Vue Test Utils/jsdom for automated frontend/unit tests.
 
-Component code should primarily handle presentation and user interaction. Non-trivial calculation logic belongs outside components.
+Bulma and Remix Icon are no longer part of the active dependency set.
+
+Vue Router is not installed because the application currently has one navigation surface. It should be introduced only when distinct URL-addressable surfaces justify it.
+
+## UI component boundary
+
+shadcn-vue is used as a source/configuration model rather than a runtime component package. UI primitives live in `src/components/ui` and may be generated/updated through the shadcn-vue CLI.
+
+Shared class composition is provided through `src/lib/utils.js`.
+
+Application/domain components should compose these UI primitives instead of building a competing generic component system.
 
 ## State ownership
 
-Use local component state for local UI details.
+Pinia is installed as application infrastructure but shared stores should only be introduced for state that crosses meaningful component/application boundaries.
 
-Use Pinia for state that must be shared across meaningful application boundaries, such as the active calculator configuration or persisted user configuration.
+Local UI state belongs in components.
 
-Do not put the thermal simulation/calculation engine inside a Pinia store. Stores may invoke calculation use-cases and keep their results, but domain rules must remain separately testable.
+The future thermal simulation/calculation engine must not live inside Pinia. Stores may hold calculator configuration/results and call calculation use-cases, but domain rules must remain framework-independent and directly testable.
 
 ## Calculation domain
 
-The calculation domain should expose explicit input and output models rather than relying on UI-shaped objects.
+The calculation domain is the next implementation stage.
 
 Expected conceptual inputs include:
 
@@ -77,21 +77,19 @@ Expected conceptual outputs include:
 - warnings/limitations;
 - calculation details needed to explain the recommendation.
 
-Exact types and naming should be determined during implementation.
+Exact types and naming will be determined during calculation-engine implementation.
 
 ## Vanilla ruleset
 
 Vanilla RimWorld mechanics are the primary calculation ruleset.
 
-Constants and formulas should have clear provenance. Avoid unexplained magic numbers scattered through UI code.
-
-A future version may centralize source metadata near constants or in dedicated research documentation so changes between RimWorld versions can be audited.
+Constants and formulas must have clear provenance. Avoid unexplained magic numbers scattered through UI/state code.
 
 ## Future mod rulesets
 
-Centralized Climate Control support is a future extension.
+Centralized Climate Control support remains a future extension.
 
-Prefer a separate module/ruleset boundary such as:
+Prefer a separate ruleset boundary such as:
 
 ```text
 calculator core
@@ -102,21 +100,19 @@ calculator core
 
 This is a conceptual boundary, not a mandatory folder layout.
 
-Do not create abstraction layers before they solve a real shared problem. The vanilla implementation should remain straightforward even if future mod support requires adapters.
+Do not create abstraction layers before they solve a real shared problem.
 
 ## Persistence
 
 Browser persistence is not part of the calculation authority.
 
-If configuration persistence/export/import is retained from the old calculator, persistence should serialize stable application-domain configuration rather than internal component/store implementation details.
-
-Version persisted/exported formats if compatibility becomes important.
+Legacy autosave/export/import code was removed with the old UI. These capabilities may be reconsidered after the rewrite data model is stable.
 
 ## Routing
 
-Vue Router is optional.
+Vue Router is intentionally not part of the current foundation.
 
-Do not add routing solely because it is in the preferred stack. Introduce it when there are distinct navigation surfaces such as calculator, documentation/help, saved configurations or settings that benefit from URLs/history.
+Introduce routing only when distinct application surfaces such as calculator/help/saved configurations/settings benefit from URLs and browser history.
 
 ## No backend requirement
 

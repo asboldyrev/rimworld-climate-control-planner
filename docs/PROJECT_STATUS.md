@@ -4,39 +4,34 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-Documentation and rewrite foundation.
+Frontend rewrite foundation is implemented on the current work branch and is ready for owner verification.
 
-The repository currently contains the old Vue calculator designed around the Centralized Climate Control mod. It is not the architecture to preserve.
-
-The new implementation has not yet replaced the legacy application.
+The legacy Centralized Climate Control UI has been removed from the active application. The app now uses the accepted vanilla-first frontend foundation.
 
 ## Current accepted baseline
 
-The following direction is accepted for the rewrite:
+The current rewrite baseline includes:
 
-- vanilla RimWorld is implemented first;
-- Centralized Climate Control support is deferred until the vanilla calculator is stable;
-- the frontend target stack is Vue + Pinia + Tailwind CSS + shadcn-vue + `@lucide/vue`;
-- Vue Router is optional and should be introduced only if the application benefits from multiple routes;
-- calculation rules should be isolated from presentation/state-management code;
-- verified RimWorld mechanics, not legacy mod formulas or rough area-only heuristics, are the authority for calculations;
-- the existing project is a rewrite source/reference, not a compatibility constraint.
+- Vue + Pinia on Vite;
+- Tailwind CSS v4 through the Vite plugin;
+- shadcn-vue project configuration and local UI primitives;
+- `@lucide/vue` as the icon library;
+- Vitest + Vue Test Utils + jsdom as the frontend/unit test foundation;
+- no Vue Router yet because the application still has one navigation surface;
+- no active Bulma or Remix Icon dependency;
+- no active legacy CCC calculator components, stores, constants or calculation composables.
 
-ADR 0001 records the vanilla-first rewrite boundary.
+Calculation rules remain intentionally absent from this stage. The next implementation stage is the framework-independent vanilla calculation core.
 
-## Current repository state
-
-The legacy application currently uses Vue/Pinia with Bulma and Remix Icon and has no documentation foundation equivalent to the newer project workflow.
-
-Those dependencies and structures may be removed or replaced during the rewrite. Their presence does not make them accepted target architecture.
+ADR 0001 remains the authority for the vanilla-first rewrite boundary.
 
 ## Immediate next work
 
-1. Establish `dev` as the integration branch and use short-lived `agent/*` / `feature/*` branches.
-2. Replace the legacy frontend foundation with the accepted target stack.
-3. Introduce an initial automated test baseline for the calculation core before implementing substantial climate formulas.
-4. Define the first vanilla calculation model and its verified constants/rules.
-5. Build the first end-to-end calculator slice around that model.
+1. Define the first calculation-domain inputs/results independently from Vue and Pinia.
+2. Add source-backed vanilla RimWorld constants and provenance.
+3. Implement/test the room thermal model needed for heating.
+4. Implement Heater and Campfire behavior.
+5. Build the first end-to-end heating calculator slice on top of the calculation core.
 
 ## Known blockers
 

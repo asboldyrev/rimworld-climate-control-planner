@@ -4,32 +4,32 @@ This file tracks major project stages, not individual PRs. Fine-grained deferred
 
 ## 1. Documentation and repository workflow foundation
 
-Status: in progress.
+Status: completed.
 
-- Establish the project documentation structure and ownership rules.
-- Establish `dev` as the integration branch.
-- Use short-lived `feature/*` and `agent/*` branches targeting `dev`.
-- Record the vanilla-first rewrite decision.
+- Project documentation structure and ownership rules are established.
+- `dev` is the integration branch.
+- Short-lived `feature/*` and `agent/*` branches target `dev`.
+- ADR 0001 records the vanilla-first rewrite decision.
 
 ## 2. Frontend rewrite foundation
 
-Status: planned.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-- Remove or isolate legacy mod-oriented application structure.
-- Establish Vue application structure for the rewrite.
-- Add Pinia state where shared application state is actually needed.
-- Add Tailwind CSS.
-- Add shadcn-vue.
-- Add `@lucide/vue`.
-- Add Vue Router only if route-level separation is useful.
-- Remove legacy Bulma/Remix Icon dependencies once no longer used.
+- Legacy mod-oriented UI/application code is removed from the active frontend.
+- Vue + Pinia remain the application foundation.
+- Tailwind CSS v4 is configured.
+- shadcn-vue project configuration and initial local UI primitives are present.
+- `@lucide/vue` replaces Remix Icon.
+- Vue Router remains intentionally absent until route-level separation is useful.
+- Bulma and Remix Icon are removed from active dependencies.
+- Vitest/Vue Test Utils/jsdom provide the initial automated test foundation.
 
 ## 3. Calculation-engine foundation
 
-Status: planned.
+Status: next.
 
 - Separate calculation/domain logic from Vue components and Pinia stores.
-- Establish typed domain inputs/results.
+- Establish typed or explicitly validated domain inputs/results.
 - Introduce a source/constant structure for verified RimWorld values.
 - Add deterministic automated tests around the calculation engine.
 - Define numerical tolerances and simulation/iteration rules where required.
