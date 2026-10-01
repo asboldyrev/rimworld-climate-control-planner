@@ -2,11 +2,25 @@
 
 This document defines the regression strategy for the rewritten RimWorld Climate Control Planner.
 
-## Current state
+## Current test foundation
 
-The legacy repository does not yet provide the desired automated test foundation.
+The rewrite uses:
 
-Introducing the test baseline is an early rewrite task. Until the tooling is committed, do not claim the project has test coverage merely because this document defines the intended policy.
+- Vitest as the test runner;
+- Vue Test Utils for Vue component interaction tests;
+- jsdom as the browser-like environment.
+
+Canonical commands:
+
+```bash
+npm test
+npm run test:watch
+npm run build
+```
+
+Tests live under `tests/`.
+
+The first frontend foundation test verifies that the active application is the vanilla-first rewrite shell rather than the removed legacy mod calculator.
 
 ## Primary testing priority: calculation core
 
@@ -36,7 +50,7 @@ When a game-version change alters verified mechanics, update source notes, tests
 
 ## Frontend tests
 
-Once the test foundation is introduced, use component/interaction tests for critical user flows rather than exhaustive visual snapshots.
+Use component/interaction tests for critical user flows rather than exhaustive visual snapshots.
 
 Protect interactions such as:
 
@@ -64,9 +78,9 @@ When a calculation or critical-flow bug is fixed, add regression coverage when p
 
 ## CI
 
-CI is not yet established as part of the rewrite baseline.
+CI is not yet established.
 
-When introduced, it should run on pull requests targeting `dev` and `main` and should include the stable automated test suite plus production build. Do not add a permanently failing required gate.
+When introduced, it should run on pull requests targeting `dev` and `main` and should include `npm test` plus `npm run build`. Do not add a permanently failing required gate.
 
 ## Verification truthfulness
 
