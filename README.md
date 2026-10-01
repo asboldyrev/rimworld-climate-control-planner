@@ -1,50 +1,65 @@
-# RimWorld Climate Control Calculator
+# RimWorld Climate Control Planner
 
-Калькулятор для расчёта требуемых ресурсов при строительстве системы климат-контроля в игре RimWorld с модом [Centralized Climate Control (Continued)](https://steamcommunity.com/sharedfiles/filedetails/?id=2007268173).
+A browser-based planner for calculating heating and cooling requirements in RimWorld.
 
-## Возможности
+The repository currently contains a legacy calculator built for the Centralized Climate Control mod. The project is being rewritten with a **vanilla-first** calculation model. Mod support is planned later as a separate extension.
 
-- Расчёт необходимого количества компонентов для системы климат-контроля
-- Поддержка нескольких комнат в одной системе
-- Учёт двойных стен
-- Автоматический подбор оптимального оборудования
-- Расчёт общих затрат ресурсов
-- Предупреждения о неэффективных конфигурациях
-- Сохранение конфигураций в браузере
-- Экспорт и импорт настроек
+## Target stack
 
-## Использование
+- Vue
+- Pinia
+- Tailwind CSS
+- shadcn-vue
+- `@lucide/vue`
+- Vue Router when application routing is actually needed
+- Vite
 
-1. Добавьте одну или несколько комнат, указав их размеры
-2. При необходимости отметьте наличие двойных стен
-3. Выберите тип оборудования или оставьте автоматический подбор
-4. Просмотрите результаты расчёта в таблице ресурсов
+## Project documentation
 
-Калькулятор автоматически сохраняет все изменения в браузере. Вы можете отключить автосохранение в любой момент.
+Start here:
 
-## Локальная разработка
+- `AGENTS.md` — mandatory rules for AI-assisted repository work;
+- `docs/PROJECT_CONTEXT.md` — stable product and technical context;
+- `docs/PROJECT_STATUS.md` — current phase, checkpoint and immediate next task;
+- `docs/ROADMAP.md` — high-level rewrite stages;
+- `docs/ARCHITECTURE.md` — current repository shape and accepted rewrite boundaries;
+- `docs/DEVELOPMENT.md` — practical development workflow;
+- `docs/TESTING.md` — calculation/frontend regression strategy;
+- `docs/GITFLOW.md` — branch, integration and future CI/release policy;
+- `docs/DOCUMENTATION.md` — authoritative documentation maintenance rules;
+- `docs/decisions/` — architecture decision records (ADRs);
+- `BACKLOG.md` — deferred work that must not be lost.
 
-Установка зависимостей
+For a new AI-assisted conversation, inspect the latest `dev`, start with `AGENTS.md`, read the linked project documentation and determine the current checkpoint from `docs/PROJECT_STATUS.md` before proposing changes.
+
+## Local development
+
+Install dependencies:
+
 ```bash
 npm install
 ```
 
-Запуск сервера разработки
+Start the development server:
+
 ```bash
 npm run dev
 ```
 
-Сборка для продакшена
+Build for production:
+
 ```bash
 npm run build
+```
 
-## Технологии
+Additional test/lint/type-check commands will be documented as the rewrite foundation introduces them.
 
-- Vue 3 (Composition API)
-- Pinia
-- Bulma CSS
-- Vite
+## Branching
 
-## Лицензия
+The intended workflow is:
 
-MIT
+- `main` — stable/release-ready code;
+- `dev` — integration branch;
+- `feature/*` and `agent/*` — short-lived branches created from and merged into `dev`.
+
+See `docs/GITFLOW.md` and `AGENTS.md` before making changes.
