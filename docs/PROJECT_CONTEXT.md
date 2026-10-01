@@ -4,19 +4,25 @@
 
 RimWorld Climate Control Planner is a browser-based calculator for planning heating and cooling in RimWorld.
 
-The repository currently contains an older calculator centered on the Centralized Climate Control mod. That implementation is legacy reference material. The application is being rewritten rather than incrementally adapted.
+The project is a vanilla-first rewrite of an older calculator centered on the Centralized Climate Control mod. That old implementation is legacy reference material rather than a compatibility target.
 
-The new product direction is:
+The product direction is:
 
-1. first implement accurate support for vanilla RimWorld climate-control mechanics;
+1. implement accurate support for vanilla RimWorld climate-control mechanics;
 2. build the calculator around a reusable, testable thermal/calculation engine;
-3. add mod support later as an extension without contaminating the vanilla rules.
+3. add mod support later as an extension without contaminating vanilla rules.
 
 The calculator should answer practical planning questions such as how many heating or cooling devices are required for a room under specified conditions and explain the assumptions behind the result.
 
+## Supported RimWorld baseline
+
+The initial calculation baseline targets **RimWorld 1.6.4850**.
+
+ADR 0002 defines the version/source policy. `docs/RIMWORLD_TEMPERATURE_MODEL.md` records implemented mechanics, constants, sources and accuracy boundaries.
+
 ## Current product scope
 
-The first rewrite targets vanilla climate-control devices and mechanics, including:
+The vanilla rewrite targets:
 
 - heater;
 - cooler;
@@ -28,26 +34,26 @@ The first rewrite targets vanilla climate-control devices and mechanics, includi
 - outdoor temperature;
 - roof/wall heat exchange and other vanilla factors required for a useful result.
 
-Exact supported inputs and mechanics must be derived from verified RimWorld behavior and accepted calculation decisions. Do not preserve old mod-specific formulas merely because they exist in the legacy code.
+Exact supported inputs and mechanics must be derived from verified RimWorld behavior and accepted calculation decisions.
 
-## Repository and target stack
+## Repository and stack
 
-The project is a frontend application built with Vite.
+The project is a client-side Vue application built with Vite.
 
-Target technologies for the rewrite:
+Current technologies:
 
 - Vue;
 - Pinia;
-- Vue Router only if application structure requires routing;
 - Tailwind CSS;
-- shadcn-vue;
-- `@lucide/vue` for icons.
+- shadcn-vue-compatible local UI components;
+- `@lucide/vue`;
+- Vitest + Vue Test Utils + jsdom.
 
-The current repository still contains legacy dependencies and UI code. Until the rewrite removes them, do not describe those legacy choices as the target architecture.
+Vue Router is intentionally absent until multiple URL-addressable application surfaces justify it.
 
 ## Calculation authority
 
-The calculation engine must be based on verified RimWorld mechanics rather than informal rules of thumb when reliable source data is available.
+The calculation engine is based on verified RimWorld mechanics rather than informal rules of thumb when reliable source data is available.
 
 Preferred evidence, in descending order:
 
@@ -56,7 +62,7 @@ Preferred evidence, in descending order:
 3. RimWorld Wiki and other maintained references for confirmation/explanation;
 4. controlled in-game observations when source behavior needs validation.
 
-Every important constant or non-obvious rule used by the calculator should be traceable to a documented source or an accepted ADR/research note.
+Every important constant or non-obvious rule used by the calculator should be traceable to documented source material or an accepted ADR/research note.
 
 ## Vanilla and mod boundaries
 

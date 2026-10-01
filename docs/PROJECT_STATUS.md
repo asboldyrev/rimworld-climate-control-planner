@@ -4,34 +4,32 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-Frontend rewrite foundation is implemented on the current work branch and is ready for owner verification.
+Calculation-engine foundation is implemented on the current work branch and is ready for owner verification.
 
-The legacy Centralized Climate Control UI has been removed from the active application. The app now uses the accepted vanilla-first frontend foundation.
+The frontend foundation is now treated as the accepted `dev` baseline.
 
 ## Current accepted baseline
 
-The current rewrite baseline includes:
+The rewrite now includes:
 
-- Vue + Pinia on Vite;
-- Tailwind CSS v4 through the Vite plugin;
-- shadcn-vue project configuration and local UI primitives;
-- `@lucide/vue` as the icon library;
-- Vitest + Vue Test Utils + jsdom as the frontend/unit test foundation;
-- no Vue Router yet because the application still has one navigation surface;
-- no active Bulma or Remix Icon dependency;
-- no active legacy CCC calculator components, stores, constants or calculation composables.
+- Vue + Pinia + Tailwind CSS + shadcn-vue-compatible local UI + Lucide frontend foundation;
+- Vitest/Vue Test Utils/jsdom automated-test foundation;
+- framework-independent vanilla climate domain under `src/domain/climate/vanilla`;
+- RimWorld **1.6.4850** as the initial supported calculation baseline;
+- documented source/provenance policy through ADR 0002 and `docs/RIMWORLD_TEMPERATURE_MODEL.md`;
+- tested low-level room temperature primitives for wall/roof exchange and controlled temperature changes;
+- tested Heater and Campfire low-level behavior;
+- explicit separation between source-faithful thermal rules and the simplified first rectangular-room geometry helper.
 
-Calculation rules remain intentionally absent from this stage. The next implementation stage is the framework-independent vanilla calculation core.
-
-ADR 0001 remains the authority for the vanilla-first rewrite boundary.
+The UI still intentionally contains no real calculator inputs/results. That belongs to the heating-model stage after the core can determine device requirements.
 
 ## Immediate next work
 
-1. Define the first calculation-domain inputs/results independently from Vue and Pinia.
-2. Add source-backed vanilla RimWorld constants and provenance.
-3. Implement/test the room thermal model needed for heating.
-4. Implement Heater and Campfire behavior.
-5. Build the first end-to-end heating calculator slice on top of the calculation core.
+1. Compose room losses and heating output into a deterministic room simulation/use-case.
+2. Determine stable/equilibrium temperature for a chosen device count.
+3. Find the minimum Heater/Campfire count needed to reach a target.
+4. Define result/warning contracts for unreachable or marginal targets.
+5. Connect the first heating use-case to the Vue UI.
 
 ## Known blockers
 

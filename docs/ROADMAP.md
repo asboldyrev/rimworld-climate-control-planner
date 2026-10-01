@@ -6,43 +6,36 @@ This file tracks major project stages, not individual PRs. Fine-grained deferred
 
 Status: completed.
 
-- Project documentation structure and ownership rules are established.
-- `dev` is the integration branch.
-- Short-lived `feature/*` and `agent/*` branches target `dev`.
-- ADR 0001 records the vanilla-first rewrite decision.
-
 ## 2. Frontend rewrite foundation
 
-Status: completed on the current work branch; awaiting owner verification/merge.
+Status: completed.
 
-- Legacy mod-oriented UI/application code is removed from the active frontend.
-- Vue + Pinia remain the application foundation.
-- Tailwind CSS v4 is configured.
-- shadcn-vue project configuration and initial local UI primitives are present.
-- `@lucide/vue` replaces Remix Icon.
-- Vue Router remains intentionally absent until route-level separation is useful.
-- Bulma and Remix Icon are removed from active dependencies.
-- Vitest/Vue Test Utils/jsdom provide the initial automated test foundation.
+- Legacy mod-oriented application surface removed.
+- Vue + Pinia + Tailwind CSS + shadcn-vue-compatible UI + Lucide foundation established.
+- Vitest/Vue Test Utils/jsdom test foundation established.
+- Vue Router intentionally deferred until needed.
 
 ## 3. Calculation-engine foundation
 
-Status: next.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-- Separate calculation/domain logic from Vue components and Pinia stores.
-- Establish typed or explicitly validated domain inputs/results.
-- Introduce a source/constant structure for verified RimWorld values.
-- Add deterministic automated tests around the calculation engine.
-- Define numerical tolerances and simulation/iteration rules where required.
+- Framework-independent vanilla domain core introduced.
+- RimWorld 1.6.4850 selected as the initial calculation baseline.
+- Source-backed constants and provenance documentation added.
+- Room temperature primitives implemented.
+- Heater and Campfire low-level behavior implemented.
+- Deterministic domain regression tests added.
+- Simplified rectangular geometry is explicitly separated from source-faithful thermal formulas.
 
 ## 4. Vanilla heating model
 
-Status: planned.
+Status: next.
 
-- Implement verified room thermal behavior required for heating.
-- Support vanilla heater.
-- Support campfire.
-- Account for room size/geometry, roof/wall exchange and relevant environmental inputs.
-- Return both required device count and useful explanatory calculation details.
+- Compose low-level primitives into room heat-loss/output simulation.
+- Determine equilibrium/stable temperature.
+- Calculate minimum Heater/Campfire count for a target.
+- Define unreachable/unsafe result handling.
+- Build the first end-to-end heating calculator slice.
 
 ## 5. Vanilla cooling model
 

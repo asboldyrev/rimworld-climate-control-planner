@@ -20,31 +20,32 @@ npm run build
 
 Tests live under `tests/`.
 
-The first frontend foundation test verifies that the active application is the vanilla-first rewrite shell rather than the removed legacy mod calculator.
-
-## Primary testing priority: calculation core
+## Calculation-core tests
 
 The calculation engine is the highest-value automated-test target.
 
-Tests should be deterministic and independent from Vue components.
+Pure domain tests live under `tests/domain/` and must not require Vue mounting or browser state.
 
-Protect:
+Current source-backed coverage includes:
 
-- individual verified constants/formulas;
-- heater and cooler device behavior;
-- passive-cooler/campfire limits;
-- room heat-loss/heat-gain calculations;
-- cooler efficiency behavior;
-- ventilation/multi-room transfer when supported;
-- numerical convergence/equilibrium rules when iterative simulation is used;
-- edge cases such as unreachable target temperatures;
-- regressions discovered by comparison with RimWorld behavior.
+- rectangular room geometry helper;
+- adjusted extreme outdoor-temperature difference;
+- thin/no/thick roof equalization;
+- low-level wall equalization;
+- simple single/double outdoor wall sample behavior;
+- thermostat-controlled temperature change;
+- Heater efficiency and TickRare output;
+- Campfire heat-push behavior.
+
+When a source-backed mechanic is implemented, add deterministic tests for its important boundaries and representative numeric examples.
 
 ## Source-backed scenarios
 
-Where practical, maintain a small set of representative scenarios whose expected behavior is traceable to game code, reliable documentation or controlled in-game verification.
+Expected behavior should be traceable to game code, maintained documentation or controlled in-game verification.
 
-Tests should not merely encode whatever the current implementation happens to return.
+Tests must not merely encode whatever the current implementation happens to return.
+
+`docs/RIMWORLD_TEMPERATURE_MODEL.md` is the human-readable source map for implemented mechanics.
 
 When a game-version change alters verified mechanics, update source notes, tests and implementation together.
 
@@ -61,6 +62,12 @@ Protect interactions such as:
 - important warnings and impossible-target states are surfaced correctly.
 
 Pure CSS/layout adjustments generally do not require new tests unless they alter interaction semantics.
+
+## Numerical comparisons
+
+Use exact equality for values that are structurally exact integers/flags.
+
+Use `toBeCloseTo` for floating-point thermal calculations. Prefer enough precision to catch a changed game coefficient rather than masking it with a large tolerance.
 
 ## Production build
 
@@ -80,7 +87,7 @@ When a calculation or critical-flow bug is fixed, add regression coverage when p
 
 CI is not yet established.
 
-When introduced, it should run on pull requests targeting `dev` and `main` and should include `npm test` plus `npm run build`. Do not add a permanently failing required gate.
+When introduced, it should run on pull requests targeting `dev` and `main` and should include `npm test` plus `npm run build`.
 
 ## Verification truthfulness
 
