@@ -400,12 +400,14 @@ The player-facing `CompTempControl.InterfaceChangeTargetTemperature()` used by t
 
 ### Calculator input policy
 
-All temperature inputs accepted by the current calculator use the source-backed global range:
+The framework-independent domain preserves RimWorld's exact source-backed range of -273.15 C ... 1000 C.
+
+The user-facing calculator intentionally uses whole-degree inputs with `step=1` and a UI range of **-273 C ... 1000 C** for:
 
 - outdoor temperature;
 - heating/cooling target temperature;
 - Cooler hot-side temperature.
 
-Values below -273.15 C or above 1000 C are rejected by the framework-independent scenario layer as well as constrained by the numeric UI inputs.
+The UI minimum is rounded inward from RimWorld's -273.15 C lower bound so browser number inputs keep a natural integer step grid (for example 9, 10, 11 rather than 9.85, 10.85, 11.85).
 
-This keeps UI validation and domain behavior consistent and prevents calculations outside the temperature range represented by RimWorld's room/control model.
+This is a UX restriction only. Domain APIs continue to accept valid fractional temperatures down to -273.15 C and reject values outside the exact game range.
