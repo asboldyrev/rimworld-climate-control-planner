@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import { Snowflake, ThermometerSun } from '@lucide/vue'
+import { Snowflake, ThermometerSun, Wind } from '@lucide/vue'
 
 import CoolingCalculator from '@/components/CoolingCalculator.vue'
 import HeatingCalculator from '@/components/HeatingCalculator.vue'
+import MultiRoomCalculator from '@/components/MultiRoomCalculator.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -30,15 +31,15 @@ const mode = ref('heating')
                   RimWorld Climate Control Planner
                 </h1>
                 <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-                  Рассчитайте климат-контроль для изолированной комнаты с учётом размеров,
-                  стен, крыши и температуры окружающей среды.
+                  Рассчитайте климат-контроль для одной комнаты или двух связанных тепловых зон
+                  с Heater, Cooler и Vent.
                 </p>
               </div>
             </div>
           </div>
 
           <div
-            class="inline-flex w-full rounded-lg border border-border bg-card p-1 shadow-sm sm:w-auto"
+            class="inline-flex w-full flex-wrap rounded-lg border border-border bg-card p-1 shadow-sm sm:w-auto"
             role="tablist"
             aria-label="Режим калькулятора"
           >
@@ -67,12 +68,26 @@ const mode = ref('heating')
               <Snowflake class="size-4" aria-hidden="true" />
               Охлаждение
             </Button>
+
+            <Button
+              data-testid="multi-room-mode"
+              size="sm"
+              :variant="mode === 'multi' ? 'default' : 'ghost'"
+              class="flex-1 sm:flex-none"
+              role="tab"
+              :aria-selected="mode === 'multi'"
+              @click="mode = 'multi'"
+            >
+              <Wind class="size-4" aria-hidden="true" />
+              Связанные комнаты
+            </Button>
           </div>
         </div>
       </header>
 
       <HeatingCalculator v-if="mode === 'heating'" />
-      <CoolingCalculator v-else />
+      <CoolingCalculator v-else-if="mode === 'cooling'" />
+      <MultiRoomCalculator v-else />
     </main>
   </div>
 </template>
