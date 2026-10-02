@@ -4,52 +4,62 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-Coupled-room heating and cooling capacity planning are implemented on the current work branch and ready for owner verification.
+The first multi-room/Vent calculator UI is implemented on the current work branch and is ready for owner verification.
 
-The two-room Vent heating planner is part of the accepted `dev` baseline.
+Coupled-room heating and cooling capacity planning are part of the accepted `dev` baseline.
 
 ## Current accepted baseline
 
-The domain now includes:
+The application now exposes three calculator surfaces:
 
-- exact thermal-zone/Vent primitives;
-- deterministic multiple-Vent planning;
-- two-room Heater simulation and minimum-count search;
-- exact Cooler pulse behavior between two mutable rooms;
-- Cooler hot-side heat injection into a real adjacent thermal zone;
-- deterministic multiple-Cooler cadence planning;
-- two-room cooling simulation with optional Vent coupling;
-- minimum Cooler-count search that also respects the exhaust-room maximum temperature.
+- isolated-room heating;
+- isolated-room cooling;
+- two connected thermal zones.
 
-No multi-room UI exists yet.
+The connected-room UI supports:
 
-## Verified coupled-room reference scenarios
+- separate room A / room B dimensions;
+- separate wall and roof configuration;
+- shared outdoor temperature;
+- Vent count;
+- Heater placement in room A or B;
+- Heater thermostat setpoint;
+- minimum-temperature targets for both heated rooms;
+- Cooler cold-side room selection;
+- Cooler thermostat setpoint;
+- maximum temperature for the cold room and exhaust room;
+- stable modeled temperatures for both rooms;
+- unreachable-state messaging when Vent coupling or exhaust constraints prevent the requested targets.
+
+The UI calls the existing coupled-room domain use-cases directly and does not duplicate thermal formulas.
+
+## Default multi-room reference scenarios
 
 Heating:
 
 - two 10x10 rooms;
 - -30 C outdoors;
-- room A Heater setpoint/target 25 C;
-- room B target 15 C;
+- room A minimum/setpoint 25 C;
+- room B minimum 15 C;
 - 2 Vent;
-- minimum Heater count: 4.
+- Heater in room A;
+- result: 4 Heater.
 
 Cooling:
 
 - two 10x10 rooms;
-- 40 C outdoors;
-- cold-room target/setpoint 20 C;
-- indoor exhaust-room maximum 100 C;
-- no Vent;
-- minimum Cooler count: 3.
+- +40 C outdoors;
+- room A cold-side maximum/setpoint 20 C;
+- room B exhaust maximum 100 C;
+- 0 Vent;
+- result: 3 Cooler.
 
 ## Immediate next work
 
-1. Build the first multi-room/Vent UI on top of the completed coupled-room domain.
-2. Expose room A / room B configuration and Vent count.
-3. Expose where Heater/Cooler is located and the relevant thermostat/setpoint.
-4. Present unreachable states caused by insufficient Vent coupling or overheating of a Cooler exhaust room.
-5. Keep doors as a separate later sub-stage.
+1. Manually verify multi-room layout at desktop/mobile widths.
+2. Research and implement vanilla door temperature coupling as the remaining planned room-coupling mechanism.
+3. After doors, start broader vanilla validation against representative in-game scenarios.
+4. Revisit persistence/export only after the final room-input model is stable.
 
 ## Known blockers
 
