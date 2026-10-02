@@ -140,8 +140,7 @@ describe('two-room Vent capacity planning', () => {
     })
 
     expect(result.reachable).toBe(true)
-    expect(result.requiredCount).toBeGreaterThan(0)
-    expect(result.requiredCount).toBeLessThanOrEqual(20)
+    expect(result.requiredCount).toBe(4)
     expect(result.simulation.temperatures.A).toBeGreaterThanOrEqual(24.99)
     expect(result.simulation.temperatures.B).toBeGreaterThanOrEqual(14.99)
   })
