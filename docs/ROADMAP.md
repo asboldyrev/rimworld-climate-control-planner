@@ -63,7 +63,7 @@ Additional completed cooling work:
 
 ### 8.3 Multi-room calculator UI
 
-Status: next.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
 - Add adjacent-room configuration.
 - Add Vent count.
@@ -73,7 +73,7 @@ Status: next.
 
 ### 8.4 Doors
 
-Status: planned separately after Vent.
+Status: next.
 
 - Research door definition rates/cadences.
 - Implement open/closed door coupling only after source behavior is fully documented.
