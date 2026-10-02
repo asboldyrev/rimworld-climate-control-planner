@@ -115,17 +115,40 @@ describe('vanilla Vent thermal-zone equalization', () => {
 
   it('returns a no-op when the building resolves to only one unique room', () => {
     const room = createThermalZone({
+      id: 'same-room',
       temperature: 20,
       cellCount: 100,
     })
 
     const result = equalizeThermalZonesThroughBuildingPulse({
-      zones: [room],
+      zones: [room, room],
       rate: VANILLA_DEVICES.vent.equalizationRate,
     })
 
+    expect(result.zones).toHaveLength(1)
     expect(result.zones[0].temperature).toBe(20)
     expect(result.energyChanges[0]).toBe(0)
+  })
+
+  it('deduplicates separate zone objects that carry the same room id', () => {
+    const result = equalizeThermalZonesThroughBuildingPulse({
+      zones: [
+        createThermalZone({
+          id: 'same-room',
+          temperature: 20,
+          cellCount: 100,
+        }),
+        createThermalZone({
+          id: 'same-room',
+          temperature: 20,
+          cellCount: 100,
+        }),
+      ],
+      rate: VANILLA_DEVICES.vent.equalizationRate,
+    })
+
+    expect(result.zones).toHaveLength(1)
+    expect(result.zones[0].temperature).toBe(20)
   })
 
   it('rejects invalid thermal-zone temperatures through the shared game bounds', () => {
