@@ -1,7 +1,4 @@
-import {
-  ROOM_TEMPERATURE_LIMITS,
-  VANILLA_DEVICES,
-} from './constants'
+import { VANILLA_DEVICES } from './constants'
 import { clampRoomTemperature } from './room'
 import { assertTemperatureWithinLimits } from './scenario'
 
@@ -56,7 +53,7 @@ export function equalizeThermalZonesThroughBuildingPulse({
   const seenObjects = new Set()
   const seenIds = new Set()
 
-  for (const zone of uniqueZones) {
+  for (const zone of zones) {
     createThermalZone(zone)
 
     const duplicateByObject = seenObjects.has(zone)
@@ -180,4 +177,3 @@ export function totalMutableZoneEnergyChange(result) {
   return result.energyChanges.reduce((sum, energy) => sum + energy, 0)
 }
 
-export { ROOM_TEMPERATURE_LIMITS }
