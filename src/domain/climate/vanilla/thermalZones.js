@@ -52,26 +52,47 @@ export function equalizeThermalZonesThroughBuildingPulse({
 
   assertFinitePositiveNumber(rate, 'rate')
 
-  for (const zone of zones) {
+  const uniqueZones = []
+  const seenObjects = new Set()
+  const seenIds = new Set()
+
+  for (const zone of uniqueZones) {
     createThermalZone(zone)
+
+    const duplicateByObject = seenObjects.has(zone)
+    const duplicateById = zone.id !== null && seenIds.has(zone.id)
+
+    if (duplicateByObject || duplicateById) {
+      continue
+    }
+
+    seenObjects.add(zone)
+
+    if (zone.id !== null) {
+      seenIds.add(zone.id)
+    }
+
+    uniqueZones.push(zone)
   }
 
-  if (zones.length === 1) {
+  if (uniqueZones.length === 1) {
     return Object.freeze({
-      averageTemperature: zones[0].temperature,
+      averageTemperature: uniqueZones[0].temperature,
       scale: 1,
-      zones: Object.freeze([cloneZoneWithTemperature(zones[0], zones[0].temperature)]),
+      zones: Object.freeze([
+        cloneZoneWithTemperature(uniqueZones[0], uniqueZones[0].temperature),
+      ]),
       energyChanges: Object.freeze([0]),
     })
   }
 
   const averageTemperature = (
-    zones.reduce((sum, zone) => sum + zone.temperature, 0) / zones.length
+    uniqueZones.reduce((sum, zone) => sum + zone.temperature, 0) / uniqueZones.length
   )
 
   let scale = 1
 
-  for (const zone of zones) {
+  for (const zone of uniqueZones) {
     if (zone.usesOutdoorTemperature) {
       continue
     }
@@ -103,7 +124,7 @@ export function equalizeThermalZonesThroughBuildingPulse({
   const nextZones = []
   const energyChanges = []
 
-  for (const zone of zones) {
+  for (const zone of uniqueZones) {
     if (zone.usesOutdoorTemperature) {
       nextZones.push(cloneZoneWithTemperature(zone, zone.temperature))
       energyChanges.push(0)
