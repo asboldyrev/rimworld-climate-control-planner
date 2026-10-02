@@ -4,11 +4,7 @@ This document defines the regression strategy for the rewritten RimWorld Climate
 
 ## Current test foundation
 
-The rewrite uses:
-
-- Vitest as the test runner;
-- Vue Test Utils for Vue component interaction tests;
-- jsdom as the browser-like environment.
+The rewrite uses Vitest, Vue Test Utils and jsdom.
 
 Canonical commands:
 
@@ -20,86 +16,60 @@ npm run build
 
 Tests live under `tests/`.
 
-## Calculation-core tests
+## Domain tests
 
-Pure domain tests live under `tests/domain/` and must not require Vue mounting or browser state.
+Pure domain tests live under `tests/domain/` and must not depend on Vue or browser state.
 
-They protect source-backed mechanics, numerical boundaries and composed heating/cooling use-cases.
+Existing suites cover:
 
-Current cooling-domain coverage includes:
+- room thermal primitives;
+- heating devices and capacity planning;
+- cooling devices and capacity planning;
+- global temperature bounds;
+- Vent/thermal-zone coupling.
 
-- exact Cooler efficiency formula;
-- hot-side 40 C penalty floor;
-- zero-only efficiency clamp;
-- Cooler TickRare cooling primitive;
-- Passive Cooler strict >17 C activation;
-- 10x10 hot-room cooling demand;
-- minimum Cooler count for room-temperature and freezer scenarios;
-- separate hot-side temperature effects;
-- Passive Cooler 17 C planning floor and below-limit rejection.
+### Vent/thermal-zone coverage
 
-Detailed arithmetic belongs here rather than in frontend tests.
+`tests/domain/vanilla-vent.test.js` verifies:
+
+- vanilla Vent rate 14;
+- equal/opposite energy transfer between two normal rooms;
+- temperature response for different room cell counts;
+- global scaling that prevents a small room from overshooting the arithmetic mean;
+- participation of an outdoor-temperature room without mutating it;
+- the directional 0.1 vacuum factor;
+- no-op behavior when only one unique room resolves around the building;
+- shared temperature-bound validation.
+
+These tests protect the exact single-pulse primitive. Future multiple-Vent/capacity tests belong in a separate coupled-room planning suite rather than weakening the exact source-level expectations.
 
 ## Frontend interaction tests
 
-`tests/frontend/App.test.js` protects both user-facing calculator modes.
+`tests/frontend/App.test.js` protects the user-facing heating and cooling calculator flows.
 
-Heating coverage verifies:
-
-- default 10x10 / -30 C / +20 C recommendation;
-- room-size changes recalculate area/device count;
-- double walls reduce required heating;
-- Heater unreachable state above its effective cutoff;
-- Campfire cutoff warning;
-- invalid numeric input is handled without throwing;
-- temperature inputs use whole-degree UI bounds of -273 C ... 1000 C while the domain preserves the exact -273.15 C ... 1000 C game bounds.
-
-Cooling coverage verifies:
-
-- mode switching;
-- default 10x10 / +40 C / +20 C cooling recommendation;
-- displayed Cooler efficiency;
-- outdoor temperature used as hot side by default;
-- custom hot-side temperature changes the recommendation;
-- Passive Cooler below-17 C limitation;
-- invalid numeric input is handled without throwing;
-- custom Cooler hot-side UI input uses the whole-degree -273 C ... 1000 C range; domain tests protect the exact -273.15 C ... 1000 C bounds.
-
-Frontend tests should assert user-visible behavior and representative results. They should not duplicate every domain numerical test.
+The UI does not expose Vent/multi-room controls yet, so this stage does not require new frontend tests.
 
 ## Source-backed scenarios
 
 Expected behavior should be traceable to game code, maintained documentation or controlled in-game verification.
 
-`docs/RIMWORLD_TEMPERATURE_MODEL.md` remains the source map for implemented mechanics.
-
-When a game-version change alters verified mechanics, update source notes, tests and implementation together.
+`docs/RIMWORLD_TEMPERATURE_MODEL.md` is the source map for implemented mechanics.
 
 ## Numerical comparisons
 
-Use exact equality for structural values.
-
-Use `toBeCloseTo` for floating-point thermal calculations with a tolerance tight enough to catch coefficient changes.
+Use exact equality for structural values and `toBeCloseTo` for floating-point thermal calculations with tight tolerances.
 
 ## Production build
 
-A production build is a separate verification gate:
-
-```bash
-npm run build
-```
-
-Do not treat a successful build as proof that calculations are correct.
+A successful `npm run build` is required as a separate verification gate but does not prove thermal correctness.
 
 ## Bug fixes
 
-When a calculation or critical-flow bug is fixed, add regression coverage when practical.
+Calculation or critical-flow bug fixes should add regression coverage when practical.
 
 ## CI
 
-CI is not yet established.
-
-When introduced, it should run on pull requests targeting `dev` and `main` and include `npm test` plus `npm run build`.
+CI is not yet established. When introduced, it should run `npm test` and `npm run build` for pull requests targeting `dev` and `main`.
 
 ## Verification truthfulness
 
