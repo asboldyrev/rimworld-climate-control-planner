@@ -23,9 +23,17 @@ All thermal/domain code remains framework-independent.
 
 ## User-facing calculator
 
-The current UI still exposes isolated-room heating and cooling only.
+The UI now exposes three surfaces from `App.vue`:
 
-Multi-room/Vent inputs remain intentionally absent until coupled heating and cooling domain behavior is complete.
+- isolated heating;
+- isolated cooling;
+- connected rooms.
+
+`MultiRoomCalculator.vue` owns only connected-room form state and presentation. It switches internally between coupled heating and coupled cooling.
+
+It constructs the existing domain plans and presents their results; it does not implement thermal formulas.
+
+The connected-room UI exposes room geometry/material assumptions, Vent count, device-side/placement information, thermostat setpoints and per-room targets.
 
 ## Thermal-zone and Vent primitives
 
