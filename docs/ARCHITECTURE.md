@@ -56,11 +56,20 @@ The Heater room's thermostat setpoint is distinct from the adjacent room's minim
 
 This distinction is necessary because Vent requires a temperature gradient to transfer heat. Equal desired temperatures do not imply that one heated room can hold another lossy room at the exact same temperature.
 
-## Future coupled cooling
+## Coupled cooling
 
-The existing single-room Cooler model already exposes cold-side capacity, hot-side temperature and hot-side heat output.
+`coupledCooling.js` models a Cooler between explicit cold-side and hot-side thermal zones.
 
-The next coupled-room layer will replace the scalar hot-side assumption with an explicit thermal zone where appropriate and inject Cooler hot-side heat into that zone.
+It owns:
+
+- exact source-faithful Cooler pulse behavior between two rooms;
+- full-capacity hot-side heat output when a Cooler pulse is active;
+- expected multi-Cooler cadence over a 120-tick planning interval;
+- optional Vent interaction between the same rooms;
+- convergence of cold/exhaust room temperatures;
+- minimum Cooler-count search subject to both the cold-room maximum and exhaust-room maximum.
+
+The isolated-room cooling UI may still use a scalar hot-side temperature. The coupled-room planner uses a real thermal zone instead.
 
 ## Doors
 
