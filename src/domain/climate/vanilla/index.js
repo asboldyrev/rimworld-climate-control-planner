@@ -1,5 +1,6 @@
 export * from './constants'
 export * from './cooling'
+export * from './coupledRooms'
 export * from './devices'
 export * from './heating'
 export * from './room'
