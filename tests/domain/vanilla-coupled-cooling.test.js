@@ -121,6 +121,35 @@ describe('two-room Cooler planning', () => {
     expect(result.temperatures.hot).toBeLessThan(100)
   })
 
+  it('shows that a Vent between cold and exhaust rooms can defeat cooling', () => {
+    const coldRoom = createRectangularCoolingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: 40,
+      targetTemperature: 20,
+    })
+    const hotRoom = createRectangularCoolingScenario({
+      width: 10,
+      height: 10,
+      outdoorTemperature: 40,
+      targetTemperature: 100,
+    })
+
+    const result = simulateTwoRoomCoolingPlan({
+      plan: createTwoRoomCoolingPlan({
+        coldRoom,
+        hotRoom,
+        coolerSetpoint: 20,
+        ventCount: 1,
+      }),
+      coolerCount: 3,
+    })
+
+    expect(result.converged).toBe(true)
+    expect(result.temperatures.cold).toBeGreaterThan(30)
+    expect(result.temperatures.hot).toBeGreaterThan(result.temperatures.cold)
+  })
+
   it('finds three Coolers for the 20 C room with a 100 C exhaust-room limit', () => {
     const coldRoom = createRectangularCoolingScenario({
       width: 10,
