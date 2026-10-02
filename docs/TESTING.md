@@ -70,7 +70,14 @@ Exact-pulse tests and average-planner tests must remain separate.
 
 ## Frontend interaction tests
 
-The UI still covers isolated-room heating/cooling only. No new frontend tests are required until multi-room controls are introduced.
+`tests/frontend/App.test.js` continues to protect isolated heating/cooling flows.
+
+`tests/frontend/MultiRoomCalculator.test.js` protects the connected-room surface:
+
+- default heating reference result requires 4 Heater;
+- reducing the connection to one Vent surfaces the known unreachable heating bottleneck;
+- coupled cooling defaults to the 3-Cooler reference scenario;
+- invalid room geometry is handled as form validation rather than throwing.
 
 ## Source-backed scenarios
 
