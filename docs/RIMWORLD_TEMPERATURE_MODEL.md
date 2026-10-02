@@ -489,3 +489,64 @@ Vent uses `TickRare`, i.e. a 250-tick cadence with Thing hash offset.
 `equalizeTwoRoomsThroughVentPulse()` therefore models one exact active Vent pulse only.
 
 The future multi-Vent planner will define a deterministic capacity approximation separately; it must not assume exact in-game Thing IDs or pulse phases.
+
+
+## Multiple Vent planning
+
+The exact Vent primitive describes one active `TickRare` pulse. For deterministic planning across the 120-tick natural-room interval, ADR 0005 defines:
+
+```text
+expected Vent pulses = ventCount * 120 / 250
+```
+
+Whole expected pulses are applied sequentially using the exact Vent source primitive. Any fractional remainder is applied as the corresponding fraction of one additional exact pulse.
+
+This matters because a Vent pulse contains overshoot protection. For example, five Vent buildings correspond to 2.4 expected pulses per 120 ticks; the planner applies two exact pulses and 40% of the next pulse rather than multiplying the first pulse by 2.4.
+
+## Two-room heating planner
+
+`coupledRooms.js` combines:
+
+- each room's natural wall/roof exchange;
+- average Vent transfer;
+- Heater average capacity;
+- Heater thermostat setpoint.
+
+The simulation advances in 120-tick planning intervals until both room temperatures change by no more than the configured convergence tolerance.
+
+Within one planning interval, natural exchange and Vent transfer are evaluated from the current room temperatures. Heater energy is then allowed to compensate the source room's net loss up to:
+
+- the Heater capacity available at that temperature;
+- the energy required to finish the interval at the thermostat setpoint.
+
+This avoids inventing an exact order for hash-offset Heater/Vent pulses while preserving the source-backed capacity and thermostat limits.
+
+### Important gradient constraint
+
+A Vent can only transfer useful heat while connected rooms have a temperature difference.
+
+Therefore a room with a Heater thermostat set to 20 C cannot generally keep an adjacent lossy room at the same 20 C through a Vent: once both rooms are equal, Vent transfer is zero, while the adjacent room continues losing heat outdoors.
+
+The planner reports such a target pair as unreachable when even unlimited Heater capacity cannot satisfy both targets at the selected source-room thermostat setpoint.
+
+### Reference two-room scenario
+
+Both rooms:
+
+- 10x10 cells;
+- ordinary thin roof;
+- single walls;
+- -30 C outdoors.
+
+Source room A:
+
+- Heater thermostat: 25 C;
+- minimum target: 25 C.
+
+Adjacent room B:
+
+- minimum target: 15 C.
+
+With two Vent buildings, the current average-cadence model requires **4 Heaters** in room A.
+
+With only one Vent, even unlimited Heater capacity at a 25 C thermostat leaves room B around **8.67 C**, showing that the limiting factor is Vent coupling rather than Heater power.
