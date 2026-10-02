@@ -7,6 +7,7 @@ import {
   roomNaturalTemperatureChangePerInterval,
 } from './heating'
 import { clampRoomTemperature } from './room'
+import { assertTemperatureWithinLimits } from './scenario'
 import {
   createThermalZone,
   equalizeTwoRoomsThroughVentPulse,
@@ -132,9 +133,7 @@ export function createTwoRoomHeatingPlan({
 
   assertNonNegativeInteger(ventCount, 'ventCount')
 
-  if (!Number.isFinite(heaterSetpoint)) {
-    throw new TypeError('heaterSetpoint must be a finite number')
-  }
+  assertTemperatureWithinLimits(heaterSetpoint, 'heaterSetpoint')
 
   return Object.freeze({
     roomA,
