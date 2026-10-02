@@ -28,7 +28,7 @@ describe('vanilla Vent thermal-zone equalization', () => {
     })
 
     expect(result.averageTemperature).toBe(20)
-    expect(result.scale).toBe(1)
+    expect(result.scale).toBeCloseTo(1, 10)
     expect(result.zones[0].temperature).toBeCloseTo(28.6, 10)
     expect(result.zones[1].temperature).toBeCloseTo(11.4, 10)
     expect(result.energyChanges[0]).toBeCloseTo(-140, 10)
