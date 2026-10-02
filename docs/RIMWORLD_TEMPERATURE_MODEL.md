@@ -550,3 +550,72 @@ Adjacent room B:
 With two Vent buildings, the current average-cadence model requires **4 Heaters** in room A.
 
 With only one Vent, even unlimited Heater capacity at a 25 C thermostat leaves room B around **8.67 C**, showing that the limiting factor is Vent coupling rather than Heater power.
+
+
+## Cooler between two real rooms
+
+`coupledCooling.js` models a Cooler whose cold side and hot side are two explicit mutable thermal zones.
+
+One exact Cooler `TickRare` pulse follows `Building_Cooler.TickRare()`:
+
+1. calculate efficiency from current hot-side and cold-side temperatures;
+2. calculate the full available cold-side energy for that rare tick;
+3. thermostat-clamp the cold-side temperature change;
+4. if the cold-side change is non-zero, push **1.25 × the full available cooling energy** to the hot side.
+
+The hot-side push is therefore based on the full available Cooler energy for the pulse, not on the smaller actual energy removed when the cold side is very close to its setpoint.
+
+This source detail is preserved explicitly by `coolerBetweenRoomsPulse()`.
+
+If the hot-side zone uses outdoor temperature, `Room.PushHeat()` rejects the heat push, so the outdoor temperature itself is not mutated.
+
+### Average Cooler cadence
+
+For deterministic planning, Cooler uses the same `TickRare` cadence policy as Heater/Vent:
+
+```text
+expected Cooler pulses = coolerCount * 120 / 250
+```
+
+Whole expected pulses are applied sequentially, followed by the fractional share of one additional exact pulse.
+
+Sequential evaluation matters because an early pulse can reach the thermostat setpoint and cause later pulses in the same planning interval to become inactive.
+
+## Two-room cooling planner
+
+The coupled cooling planner combines:
+
+- natural wall/roof exchange for the cold room;
+- natural wall/roof exchange for the hot/exhaust room;
+- optional Vent exchange between the rooms;
+- source-backed Cooler cold-side removal;
+- source-backed Cooler hot-side heat output.
+
+The simulation advances in 120-tick planning intervals until both room temperatures stabilize.
+
+The cold-room target is treated as a maximum desired temperature. The exhaust-room target is also treated as a maximum allowed temperature.
+
+Because extra Cooler devices also inject more heat into the exhaust room, minimum-count search is performed in ascending integer order rather than assuming that the success condition is perfectly monotonic.
+
+### Coupled cooling reference scenario
+
+Both rooms:
+
+- 10x10 cells;
+- single walls;
+- ordinary thin roof;
+- 40 C outdoors.
+
+Cold room:
+
+- Cooler setpoint/maximum target: 20 C.
+
+Indoor exhaust room:
+
+- maximum target: 100 C.
+
+With no Vent between the rooms, the current planner requires **3 Coolers**.
+
+The exhaust room stabilizes well above outdoor temperature because active Cooler pulses dump heat into it.
+
+Adding a Vent directly between the cold room and the exhaust room strongly counteracts cooling; with three Coolers in the reference geometry the cold room remains above 30 C in the current model.

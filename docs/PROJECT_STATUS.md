@@ -4,47 +4,52 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-Two-room Vent heating capacity planning is implemented on the current work branch and is ready for owner verification.
+Coupled-room heating and cooling capacity planning are implemented on the current work branch and ready for owner verification.
 
-The exact thermal-zone/Vent foundation is now part of the accepted `dev` baseline.
+The two-room Vent heating planner is part of the accepted `dev` baseline.
 
 ## Current accepted baseline
 
-The application/domain now includes:
+The domain now includes:
 
-- user-facing isolated-room heating and cooling calculators;
-- source-backed room/device primitives;
-- explicit thermal zones;
-- exact single-pulse Vent behavior;
-- deterministic multiple-Vent cadence model from ADR 0005;
-- two-room heating simulation combining natural losses, Vent transfer and Heater thermostat/capacity;
-- minimum Heater-count search for two Vent-connected rooms;
-- unreachable-target detection when the selected thermostat setpoint cannot create enough temperature gradient.
+- exact thermal-zone/Vent primitives;
+- deterministic multiple-Vent planning;
+- two-room Heater simulation and minimum-count search;
+- exact Cooler pulse behavior between two mutable rooms;
+- Cooler hot-side heat injection into a real adjacent thermal zone;
+- deterministic multiple-Cooler cadence planning;
+- two-room cooling simulation with optional Vent coupling;
+- minimum Cooler-count search that also respects the exhaust-room maximum temperature.
 
 No multi-room UI exists yet.
 
-Two-room cooling with Cooler hot-side heat injection is not implemented yet and remains the next coupled-room domain task.
+## Verified coupled-room reference scenarios
 
-## Verified reference scenario
+Heating:
 
-Two 10x10 rooms, both exposed to -30 C, single walls and ordinary roofs:
-
-- room A Heater setpoint/target: 25 C;
-- room B target: 15 C;
-- Vent count: 2.
-
-Result:
-
+- two 10x10 rooms;
+- -30 C outdoors;
+- room A Heater setpoint/target 25 C;
+- room B target 15 C;
+- 2 Vent;
 - minimum Heater count: 4.
 
-With one Vent and the same 25 C Heater setpoint, room B cannot reach 15 C even with unlimited Heater capacity; its modeled limit is about 8.67 C.
+Cooling:
+
+- two 10x10 rooms;
+- 40 C outdoors;
+- cold-room target/setpoint 20 C;
+- indoor exhaust-room maximum 100 C;
+- no Vent;
+- minimum Cooler count: 3.
 
 ## Immediate next work
 
-1. Add two-room Cooler planning, including hot-side heat output into an adjacent thermal zone.
-2. Verify Heater/Cooler coupled-room reference scenarios.
-3. Then build the first multi-room/Vent UI.
-4. Keep door coupling as a separate later sub-stage.
+1. Build the first multi-room/Vent UI on top of the completed coupled-room domain.
+2. Expose room A / room B configuration and Vent count.
+3. Expose where Heater/Cooler is located and the relevant thermostat/setpoint.
+4. Present unreachable states caused by insufficient Vent coupling or overheating of a Cooler exhaust room.
+5. Keep doors as a separate later sub-stage.
 
 ## Known blockers
 

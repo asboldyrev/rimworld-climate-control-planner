@@ -27,7 +27,8 @@ Existing suites cover:
 - cooling devices/capacity;
 - global temperature bounds;
 - exact Vent/thermal-zone coupling;
-- deterministic two-room Vent planning.
+- deterministic two-room Vent planning;
+- coupled two-room Cooler planning.
 
 ### Exact Vent tests
 
@@ -53,6 +54,19 @@ Existing suites cover:
 - the 10x10 / -30 C / 25→15 C / 2 Vent reference scenario requires 4 Heaters.
 
 Exact-pulse tests and average-planner tests must remain separate.
+
+### Coupled cooling tests
+
+`vanilla-coupled-cooling.test.js` verifies:
+
+- thermostat-clamped cold-side removal still causes full-capacity hot-side heat output;
+- outdoor-temperature hot sides are not mutated;
+- one Cooler corresponds to 0.48 expected rare-tick pulses per planning interval;
+- sequential Cooler pulses stop once the cold side reaches setpoint;
+- a real indoor exhaust room heats above outdoors;
+- the 10x10 / 40 C / 20 C cold-room / 100 C exhaust reference scenario requires 3 Coolers;
+- a Vent between cold and exhaust rooms can materially defeat cooling;
+- exhaust-room temperature constraints can make a target pair unreachable.
 
 ## Frontend interaction tests
 

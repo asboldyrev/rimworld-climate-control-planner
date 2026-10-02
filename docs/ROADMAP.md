@@ -40,9 +40,9 @@ Status: completed.
 
 ### 8.2 Coupled-room capacity planning
 
-Status: in progress.
+Status: completed on the current work branch; awaiting owner verification/merge.
 
-Completed on the current work branch:
+Completed:
 
 - deterministic multiple-Vent cadence model;
 - sequential exact-pulse handling for multiple expected Vent pulses;
@@ -52,14 +52,18 @@ Completed on the current work branch:
 - target-unreachable detection caused by insufficient temperature gradient;
 - ADR 0005 documenting the Vent cadence approximation.
 
-Next:
+Additional completed cooling work:
 
-- Cooler cold-side removal plus hot-side heat injection into a real adjacent thermal zone;
-- coupled-room cooling/freezer scenarios.
+- exact Cooler pulse between explicit cold/hot thermal zones;
+- source-faithful hot-side heat injection;
+- deterministic multi-Cooler cadence planning;
+- two-room cooling convergence;
+- minimum Cooler count with exhaust-room maximum constraints;
+- optional Vent interaction between cold and exhaust rooms.
 
 ### 8.3 Multi-room calculator UI
 
-Status: planned after heating and cooling coupled-room domain support.
+Status: next.
 
 - Add adjacent-room configuration.
 - Add Vent count.
