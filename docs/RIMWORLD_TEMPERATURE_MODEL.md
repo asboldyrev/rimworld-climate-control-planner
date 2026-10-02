@@ -411,3 +411,81 @@ The user-facing calculator intentionally uses whole-degree inputs with `step=1` 
 The UI minimum is rounded inward from RimWorld's -273.15 C lower bound so browser number inputs keep a natural integer step grid (for example 9, 10, 11 rather than 9.85, 10.85, 11.85).
 
 This is a UX restriction only. Domain APIs continue to accept valid fractional temperatures down to -273.15 C and reject values outside the exact game range.
+
+
+## Vent and room-to-room equalization
+
+Vanilla Vent calls:
+
+```text
+GenTemperature.EqualizeTemperaturesThroughBuilding(
+    vent,
+    rate: 14,
+    twoWay: true
+)
+```
+
+from `Building_Vent.TickRare()` while the Vent is switched on.
+
+### Neighboring-room discovery
+
+For a two-way Vent, RimWorld inspects the cells immediately in front of and behind the building and collects neighboring `Room` objects in a `HashSet`.
+
+The same room is therefore counted only once even if both sides resolve to it.
+
+The domain primitive mirrors that uniqueness rule by object identity and, when supplied, thermal-zone `id`.
+
+### Equalization target
+
+For all unique rooms found around the building, RimWorld computes the **arithmetic mean of room temperatures**:
+
+```text
+mean = sum(room temperatures) / room count
+```
+
+This mean is not weighted by room cell count.
+
+### Transfer rate and overshoot protection
+
+For each mutable indoor room, the source first considers:
+
+```text
+raw energy = (mean - room temperature) * rate
+candidate temperature = room temperature + raw energy / room cell count
+```
+
+If that candidate would cross the arithmetic mean, it is clamped to the mean.
+
+A single global scale factor is then chosen so that no mutable room crosses the mean. The final room change is:
+
+```text
+delta T =
+    (mean - room temperature)
+    * rate
+    * global scale
+    / room cell count
+```
+
+For Vent, `rate = 14`.
+
+For two ordinary rooms this transfers equal and opposite energy, so energy is conserved between the rooms. Smaller rooms undergo a larger temperature change for the same transferred energy.
+
+### Outdoor-temperature rooms
+
+Rooms with `UsesOutdoorTemperature` participate in the arithmetic mean but are not mutated by the equalization call.
+
+This means a Vent facing an outdoor-temperature room can exchange heat with the indoor room while the outdoor side remains fixed by the map temperature system.
+
+### Vacuum behavior
+
+In vacuum maps, when a mutable room would **lose** heat through the building, RimWorld multiplies that room's final transfer by `0.1`.
+
+This directional factor is preserved by the domain primitive.
+
+### Timing boundary
+
+Vent uses `TickRare`, i.e. a 250-tick cadence with Thing hash offset.
+
+`equalizeTwoRoomsThroughVentPulse()` therefore models one exact active Vent pulse only.
+
+The future multi-Vent planner will define a deterministic capacity approximation separately; it must not assume exact in-game Thing IDs or pulse phases.

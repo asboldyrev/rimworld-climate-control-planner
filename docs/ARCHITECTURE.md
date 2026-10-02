@@ -2,167 +2,100 @@
 
 This document describes the architecture that exists now. Planned changes must be explicitly marked as future/considered and should not be presented as implemented.
 
-## Current shape
-
-The application now has a complete first vertical slice:
+## Current layers
 
 ```text
-App.vue
-  |
-  v
-HeatingCalculator.vue
-  |
-  v
-framework-independent heating use-cases
-  |
-  v
-source-backed vanilla thermal core
+Vue calculator UI
+      |
+      v
+single-room heating/cooling use-cases
+      |
+      +--------------------+
+      |                    |
+      v                    v
+room/device primitives   thermal-zone coupling primitives
+                              |
+                              v
+                    Vent / future doors / zone links
 ```
 
-The Vue layer owns form state and presentation only. Thermal formulas and device recommendations remain in the domain layer.
+All thermal/domain code remains framework-independent.
 
-## Frontend
+## User-facing calculator
 
-Current frontend technologies:
-
-- Vue;
-- Vite;
-- Pinia;
-- Tailwind CSS v4;
-- shadcn-vue-compatible local UI components;
-- `@lucide/vue`;
-- Vitest/Vue Test Utils/jsdom.
-
-Vue Router remains intentionally absent while there is one calculator surface.
-
-## Heating UI state
-
-The first heating calculator keeps its state local to `HeatingCalculator.vue`.
-
-This is intentional: there is currently no meaningful cross-route or cross-component shared calculator state that would justify a Pinia store.
-
-Pinia remains available for future state that genuinely crosses application boundaries.
-
-## Calculation boundary
-
-`HeatingCalculator.vue` may:
-
-- normalize UI values;
-- construct a supported heating scenario;
-- invoke domain use-cases;
-- format results for display.
-
-It must not duplicate or reimplement:
-
-- wall/roof thermal formulas;
-- device efficiency/cutoff logic;
-- minimum-count calculations;
-- equilibrium logic.
-
-Those remain under `src/domain/climate/vanilla`.
-
-## Current user-facing model
-
-The UI currently exposes only combinations that the domain model explicitly supports:
-
-- isolated rectangular rooms;
-- width/height geometry;
-- one- or two-layer exterior walls;
-- full thin roof;
-- full thick roof;
-- fully open roof;
-- fixed outdoor temperature;
-- heating target temperature.
-
-The UI does not simulate partial/mixed roofs, doors, neighboring rooms or vents yet.
-
-## Result contract
-
-The heating UI presents:
-
-- room area;
-- required heat/s at target temperature;
-- wall and roof temperature change per 120 ticks;
-- minimum Heater count;
-- Heater power margin;
-- minimum Campfire count;
-- Campfire non-thermostatic warning;
-- unreachable device state where relevant.
-
-## Testing boundary
-
-Frontend tests verify that changing UI inputs changes visible results according to the domain use-cases.
-
-They do not reproduce domain arithmetic inside the test suite; detailed numerical mechanics remain covered by `tests/domain/`.
-
-## Cooling domain
-
-Cooling is now implemented as a framework-independent domain layer.
-
-`src/domain/climate/vanilla/cooling.js` provides:
-
-- natural cooling-load calculation for the supported rectangular room model;
-- source-backed Cooler capacity at a cold-side/hot-side temperature pair;
-- minimum Cooler count;
-- Passive Cooler average-capacity planning;
-- minimum Passive Cooler count and 17 C lower-limit reporting.
-
-`scenario.js` now owns the shared rectangular climate scenario used by heating and cooling. `createRectangularHeatingScenario()` remains as a compatibility wrapper for the existing UI/domain call sites.
-
-Cooler hot-side temperature is explicitly modeled and defaults to outdoor temperature only when the caller does not provide another value.
-
-## User-facing calculator modes
-
-`App.vue` now owns only the active calculator mode:
+The current UI has two modes:
 
 - heating;
 - cooling.
 
-Each mode remains a separate Vue component with local form state:
+Each mode owns local form state. Pinia remains unused for calculator state because there is still no cross-surface state requirement.
 
-```text
-App.vue
-├── HeatingCalculator.vue
-└── CoolingCalculator.vue
-```
+The user-facing calculator currently models one isolated rectangular room.
 
-This keeps the already-verified heating flow isolated while allowing the cooling form to expose cooling-specific inputs such as Cooler hot-side temperature.
+## Single-room domain
 
-No Pinia store is introduced because state is still local to the currently mounted calculator surface.
+The existing room/scenario/heating/cooling modules remain responsible for:
 
-## Cooling UI boundary
+- rectangular room geometry;
+- natural wall/roof exchange;
+- Heater/Campfire behavior;
+- Cooler/Passive Cooler behavior;
+- single-room device-count recommendations.
 
-`CoolingCalculator.vue` may:
+## Thermal-zone domain
 
-- normalize cooling form values;
-- select whether Cooler hot side equals outdoors or uses a custom temperature;
-- construct a supported cooling scenario;
-- invoke domain cooling use-cases;
-- format results for display.
+`src/domain/climate/vanilla/thermalZones.js` introduces explicit temperature zones for room coupling.
 
-It must not duplicate Cooler efficiency, cooling-demand or Passive Cooler cutoff arithmetic.
+A zone contains:
 
-The UI exposes:
+- current temperature;
+- cell count;
+- optional identifier;
+- `usesOutdoorTemperature` flag.
 
-- room dimensions;
-- outdoor and target temperatures;
-- single/double walls;
-- supported roof types;
-- Cooler hot-side assumption/custom value;
-- required cooling heat/s;
-- Cooler count/efficiency/power margin;
-- Passive Cooler recommendation and 17 C warning.
+The generic `equalizeThermalZonesThroughBuildingPulse()` mirrors RimWorld's building equalization algorithm at the domain level:
 
-## Future multi-room rules
+- arithmetic mean of unique neighboring room temperatures;
+- rate-based energy movement;
+- global scale preventing any mutable room from overshooting the mean;
+- no mutation of rooms using outdoor temperature;
+- RimWorld vacuum factor for rooms losing heat.
 
-Ventilation and adjacent rooms are the next thermal-zone features.
+`equalizeTwoRoomsThroughVentPulse()` supplies vanilla Vent rate 14.
 
-The explicit Cooler hot-side temperature boundary should evolve into a real neighboring thermal zone rather than being hidden inside Cooler-specific UI state.
+## Exact pulse vs planner model
+
+The thermal-zone primitive represents one source-faithful building equalization call.
+
+Vent itself invokes this from `TickRare`, so different Vent buildings can have different hash phases. The exact pulse primitive must remain separate from the future deterministic capacity-planning approximation for multiple vents.
+
+ADR 0004 records this boundary.
+
+## Cooler hot side
+
+The existing scalar Cooler hot-side temperature remains valid for the single-room UI.
+
+Future coupled-room use-cases should allow that hot side to reference an explicit thermal zone. The source-backed Cooler formula itself should not change.
+
+## Future two-room use-case
+
+The next domain layer will combine:
+
+- each room's natural wall/roof exchange;
+- Vent coupling;
+- device energy in one or both rooms;
+- an average/deterministic planning model consistent with ADR 0003.
+
+Only after that layer is tested should the UI expose adjacent-room and Vent-count controls.
+
+## Doors
+
+Doors also call RimWorld's generic building equalization function, but with definition-specific rates and different one-/two-way discovery behavior. They remain a separate later feature rather than being approximated as Vent.
 
 ## Persistence, routing and backend
 
-Persistence is deferred until the input model stabilizes.
+Persistence remains deferred until the calculator input model stabilizes.
 
-Vue Router is only added when genuinely separate URL-addressable surfaces exist.
+Vue Router is unnecessary while the product remains one calculator surface.
 
 No backend is required by the current product direction.

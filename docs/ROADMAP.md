@@ -28,32 +28,56 @@ Status: completed.
 
 ## 7. Cooling calculator UI
 
-Status: completed on the current work branch; awaiting owner verification/merge.
-
-- Heating/Cooling mode switch added.
-- Cooler and Passive Cooler recommendations exposed.
-- Cooling demand displayed.
-- Cooler efficiency displayed.
-- Hot-side temperature defaults to outdoors but can be configured separately.
-- Passive Cooler 17 C limitation surfaced.
-- Frontend interaction regression tests added.
+Status: completed.
 
 ## 8. Room coupling and ventilation
 
+Status: in progress.
+
+### 8.1 Thermal-zone and exact Vent foundation
+
+Status: completed on the current work branch; awaiting owner verification/merge.
+
+- Explicit thermal-zone representation.
+- Source-faithful `EqualizeTemperaturesThroughBuilding` primitive.
+- Vent rate 14 wrapper.
+- Different room-size behavior and overshoot limiting.
+- Outdoor-temperature-room behavior.
+- Vacuum directional factor.
+- Domain regression tests.
+
+### 8.2 Two-room capacity planning
+
 Status: next.
 
-- Support Vent as a heat-transfer device rather than a heat producer.
-- Define adjacent thermal zones.
-- Model room-to-room temperature equalization.
-- Add doors/other coupling only where source behavior is understood and tested.
-- Reuse explicit Cooler hot-side thermal-zone concepts where appropriate.
+- Define deterministic multiple-Vent planning model.
+- Combine room natural exchange with Vent transfer.
+- Calculate steady/sustainable conditions for two connected rooms.
+- Integrate Heater/Cooler capacity with the coupled system.
+
+### 8.3 Multi-room calculator UI
+
+Status: planned.
+
+- Add adjacent-room configuration.
+- Add Vent count.
+- Explain which room contains climate-control devices.
+- Present cross-room heat-transfer breakdown.
+- Add frontend interaction tests.
+
+### 8.4 Doors
+
+Status: planned separately after Vent.
+
+- Research door definition rates/cadences.
+- Implement open/closed door coupling only after source behavior is fully documented.
 
 ## 9. Extended calculator UX and persistence
 
 Status: planned.
 
 - Add richer room/environment configuration as the domain model expands.
-- Add local persistence/export/import only after the rewrite data model is stable and if still useful.
+- Re-evaluate local persistence/export/import after the input model stabilizes.
 - Ensure responsive desktop/mobile behavior.
 
 ## 10. Validation and vanilla release baseline

@@ -4,54 +4,32 @@ Last updated: 2026-10-02
 
 ## Active roadmap stage
 
-The first user-facing vanilla cooling calculator UI is implemented on the current work branch and is ready for owner verification.
+Thermal-zone foundation and source-faithful Vent pulse behavior are implemented on the current work branch and are ready for owner verification.
 
-Heating and cooling domain models are both part of the accepted `dev` baseline.
+Heating and cooling calculator UIs are part of the accepted `dev` baseline.
 
 ## Current accepted baseline
 
-The application now includes:
+The application includes:
 
-- working vanilla heating calculator UI;
-- working vanilla cooling calculator UI;
-- mode switch between heating and cooling;
-- source-backed Heater, Campfire, Cooler and Passive Cooler domain models;
-- shared rectangular-room climate geometry/environment model;
-- explicit Cooler hot-side temperature handling;
-- user-visible Cooler efficiency and cooling-demand breakdown;
-- Passive Cooler 17 C limitation and non-thermostatic warning;
-- frontend interaction tests covering both calculator modes.
+- user-facing vanilla heating and cooling calculators;
+- source-backed isolated-room heating/cooling domain models;
+- exact RimWorld temperature input bounds in the domain and whole-degree UI bounds;
+- explicit thermal-zone domain objects for room coupling;
+- a source-faithful generic building temperature-equalization pulse;
+- a Vent wrapper using vanilla rate 14 and two-room coupling;
+- regression tests for energy transfer, different room sizes, overshoot prevention, outdoor-temperature rooms and vacuum behavior;
+- ADR 0004 defining explicit thermal zones as the multi-room architecture.
 
-The current user-facing model still assumes an isolated rectangular room without doors, adjacent thermal zones or vents.
-
-## Cooling UI reference scenario
-
-Default cooling inputs:
-
-- room: 10x10;
-- outdoors: +40 C;
-- target: +20 C;
-- single walls;
-- ordinary thin roof;
-- Cooler hot side: outdoors (+40 C).
-
-Displayed result:
-
-- 100 room cells;
-- approximately 14.16 heat/s must be removed;
-- Cooler efficiency: about 84.6%;
-- 1 Cooler;
-- 2 Passive Coolers.
-
-The user can decouple the Cooler hot side from outdoor temperature and enter a custom hot-side temperature.
+No multi-room planner/use-case or Vent UI exists yet. The new primitives model a single equalization pulse, not the averaged effect of an arbitrary count of hash-offset Vent buildings.
 
 ## Immediate next work
 
-1. Verify the cooling UI manually at desktop/mobile widths.
-2. Start the room-coupling / ventilation domain model.
-3. Define adjacent thermal zones and Vent equalization behavior.
-4. Reuse the existing explicit Cooler hot-side concept where room-to-room exhaust is modeled.
-5. Add user-facing room-coupling inputs only after the domain model is source-backed and tested.
+1. Build a deterministic two-room planning model on top of exact Vent pulses.
+2. Define how multiple Vent buildings are represented under the existing average-power planning policy.
+3. Combine each room's natural wall/roof exchange with Vent coupling.
+4. Add Heater/Cooler capacity planning across two connected rooms.
+5. Only then expose adjacent-room/Vent inputs in the UI.
 
 ## Known blockers
 
